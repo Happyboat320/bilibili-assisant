@@ -15,7 +15,7 @@ npm run build
 2. 点击“临时载入附加组件”，选择 `extension/manifest.json`。
 3. 打开或刷新 B 站，通过插件工具栏进入详细设置。
 
-运行 `npm run package` 可生成 `artifacts/bilibili-assistant-1.4.0.xpi`。
+运行 `npm run package` 可生成 `artifacts/bilibili-assistant-1.5.0.xpi`。
 
 ## 内置字幕识别
 
@@ -32,32 +32,13 @@ npm run build
 
 语言可选自动、中文或英文，输出不做翻译。浏览器没有 NVIDIA CUDA 加速，CPU 识别速度取决于机器和音频。
 
-## 外置偏好服务
+## 内置偏好模型
 
-只有实验性视频偏好筛选需要 Python 服务，建议 Python 3.10–3.12。在项目根目录运行：
+无需安装 Python、填写服务令牌或启动本地进程。插件保留 MiniLM → token Transformer → MLP 结构，编码和训练均在浏览器 CPU Worker 内执行。
 
-```bash
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install --index-url https://download.pytorch.org/whl/cpu 'torch>=2.6,<3'
-python -m pip install -r requirements-preference.txt
-python server.py
-```
+在工具栏手动开启当前页面的偏好筛选并标注视频。第 31 条不同视频标注后自动准备模型和训练；下载源在详细设置中选择。MiniLM 量化权重约 113 MiB、分词器约 16 MiB，训练头保存在浏览器 IndexedDB。完整下载后可离线复用。
 
-Windows PowerShell：
-
-```powershell
-cd backend
-py -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-.venv\Scripts\python.exe -m pip install --index-url https://download.pytorch.org/whl/cpu 'torch>=2.6,<3'
-.venv\Scripts\python.exe -m pip install -r requirements-preference.txt
-.venv\Scripts\python.exe server.py
-```
-
-服务监听 `127.0.0.1:8767`。复制终端令牌到“详细设置 → 实验性：我的视频偏好 → 偏好服务令牌”，点击“检查偏好服务”。已有标注和 `head.pt` 保留在 `backend/.runtime/preferences/`，更新服务后可继续使用。使用方法见[偏好模型说明](preferences.md)。
+旧版 `labels.json` 可在详细设置导入，之后在插件内重新训练。模型使用与数据备份详见[偏好说明](preferences.md)。
 
 ## 限制
 

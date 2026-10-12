@@ -40,7 +40,7 @@ test("弹窗和详细设置同步开关与时长，只提交修改字段并显�
   const root = path.join(__dirname, "../extension");
   const A = require("../extension/shared.js");
   const listeners = [], saves = [];
-  let settings = A.normalizeSettings({ backendToken: "test-token" });
+  let settings = A.normalizeSettings({ preferenceModelSource: "huggingface" });
   const browser = {
     tabs: {
       async query() { return [{ id: 1, url: "https://www.bilibili.com/video/BV1xx" }]; },
@@ -94,7 +94,7 @@ test("弹窗和详细设置同步开关与时长，只提交修改字段并显�
     assert.deepEqual(Object.keys(saves.at(-1)), ["keywords"]);
     assert.equal(settings.filterAds, false);
     assert.equal(settings.localFallback, true);
-    assert.equal(settings.backendToken, "test-token");
+    assert.equal(settings.preferenceModelSource, "huggingface");
     change(options, form.elements.minDuration, "120");
     await tick();
     assert.equal(popup.window.document.querySelector("#duration").textContent, "< 120 秒");

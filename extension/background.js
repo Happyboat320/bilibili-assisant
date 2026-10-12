@@ -1,7 +1,7 @@
-/* 网络请求在扩展后台执行，页面脚本不能读取本地服务令牌。 */
+/* B 站请求与本地偏好调度在扩展后台执行。 */
 "use strict";
 const A = BiliAssistant;
-const BACKEND = "http://127.0.0.1:8767";
+const preferenceService = BiliPreferenceService();
 const jobs = new Map();
 let wbiKeys = null;
 let wbiFetched = 0;
@@ -13,10 +13,8 @@ const preferenceSessions = new Map();
 
 async function syncPreferenceRuntime() {
   const s = await settings();
-  if (!s.backendToken) return;
-  return localRequest("/v1/preferences/runtime", s, {
-    enabled: [...preferenceSessions.values()].some(session => session.enabled)
-  }).catch(() => {});
+  return preferenceService.setActive([...preferenceSessions.values()].some(session => session.enabled), s.preferenceModelSource);
+
 }
 
 // B 站部分接口校验 Referer；只修改本扩展发出的请求。
@@ -109,22 +107,6 @@ async function readySubtitles(tabId, body, info, language, source, action, s) {
     message: source === "builtin" ? "B 站字幕已就绪，点击时间可跳转。" : "内置识别字幕已就绪。" });
   await exportSubtitles(tabId, jobs.get(tabId), action, s);
 }
-async function localRequest(path, s, body, method = "POST") {
-  if (!s.backendToken) throw new Error("请先在设置页填写偏好服务令牌。");
-  try {
-    const result = await jsonFetch(BACKEND + path, {
-      method, headers: { "Content-Type": "application/json", "Authorization": `Bearer ${s.backendToken}` },
-      ...(body ? { body: JSON.stringify(body) } : {})
-    });
-    return result;
-  } catch (error) {
-    if (/HTTP 404/.test(error.message) && /^\/v1\/preferences\/(status|labels|score)$/.test(path)) throw new Error("本地服务版本过旧，请重启新版 backend/server.py。");
-    if (/HTTP 401/.test(error.message)) throw new Error("本地服务令牌不正确，请重新复制服务终端输出的令牌。");
-    if (/HTTP 429/.test(error.message)) throw new Error("偏好推理队列已满，请稍后重试。");
-    if (error instanceof TypeError || error.name === "TimeoutError") throw new Error("无法连接本地服务，请按说明启动 backend/server.py。");
-    throw error;
-  }
-}
 async function download(cues, info, language, s) {
   const text = A.serializeSubtitles(cues, s.format);
   const blob = new Blob([text], { type: s.format === "vtt" ? "text/vtt;charset=utf-8" : "text/plain;charset=utf-8" });
@@ -201,16 +183,16 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     if (!pageTab?.url?.startsWith("https://www.bilibili.com/") || !message.pageId) return;
     const wasEnabled = preferenceSessions.get(pageTab.id)?.enabled;
     preferenceSessions.set(pageTab.id, { pageId: String(message.pageId), enabled: false });
-    if (wasEnabled) void syncPreferenceRuntime();
+    if (wasEnabled) void syncPreferenceRuntime().catch(() => {});
     const s = await settings();
-    return { ...s, backendToken: "", preferenceEnabled: false };
+    return { ...s, preferenceEnabled: false };
   }
   if (message.type === "getPreferenceSession") return preferenceSessions.get(pageTab?.id ?? message.tabId) || { enabled: false };
   if (message.type === "preferencePageClosed") {
     const session = preferenceSessions.get(pageTab?.id);
     if (session?.pageId === message.pageId) {
       preferenceSessions.delete(pageTab.id);
-      if (session.enabled) void syncPreferenceRuntime();
+      if (session.enabled) void syncPreferenceRuntime().catch(() => {});
     }
     return { ok: true };
   }
@@ -221,13 +203,12 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     if (!tab.url?.startsWith("https://www.bilibili.com/") || !session) throw new Error("请先打开或刷新 B 站页面。");
     session.enabled = message.enabled === true;
     await browser.tabs.sendMessage(tab.id, { type: "preferenceSession", ...session });
-    void syncPreferenceRuntime();
+    void syncPreferenceRuntime().catch(() => {});
     return session;
   }
   if (message.type === "getSettings") {
     const s = await settings();
     s.preferenceEnabled = !!preferenceSessions.get(pageTab?.id)?.enabled;
-    if (pageTab) s.backendToken = "";
     return s;
   }
   if (message.type === "saveSettings") {
@@ -238,33 +219,33 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
       // 偏好开启状态只在当前文档会话中保存，绝不写进持久化设置。
       s.preferenceEnabled = false;
       await browser.storage.local.set({ settings: s });
-      if (preferenceSessions.size) void syncPreferenceRuntime();
+      if (preferenceSessions.size) void syncPreferenceRuntime().catch(() => {});
       return s;
     });
     settingsSave = saved.catch(() => {});
     return saved;
   }
-  if (message.type === "backendCheck") {
-    if (pageTab) return;
-    return localRequest("/v1/health", await settings(), null, "GET");
+  if (["exportPreferenceLabels", "importPreferenceLabels"].includes(message.type)) {
+    if (pageTab) throw new Error("请在详细设置中导入或导出标注。");
+    return message.type === "exportPreferenceLabels" ? preferenceService.exportLabels() : preferenceService.importLabels(message.data);
   }
   if (["preferenceStatus", "preferenceScore", "preferenceLabel", "resetPreferences", "claimPreferenceFeedback"].includes(message.type)) {
     const s = await settings();
     if (pageTab && !pageTab.url?.startsWith("https://www.bilibili.com/")) return;
     if (message.type === "resetPreferences") {
       if (pageTab) throw new Error("请在详细设置中清空偏好模型。");
-      const result = await localRequest("/v1/preferences", s, null, "DELETE");
-      await browser.storage.local.set({ preferenceRevision: result.revision, preferenceRatings: {}, preferenceFeedbackLedger: [] });
-      return result;
+      return preferenceService.reset();
     }
     const session = preferenceSessions.get(pageTab?.id ?? message.tabId);
     const active = !!session?.enabled && (!pageTab || session.pageId === message.pageId);
-    const statusPath = `/v1/preferences/status?active=${active}`;
-    if (message.type === "preferenceStatus") return localRequest(statusPath, s, null, "GET");
+    if (message.type === "preferenceStatus") {
+      const state = await preferenceService.status();
+      return pageTab && !active ? { ...state, ready: false, runtimeActive: false } : state;
+    }
     if (!active) throw new Error("请先手动开启当前页面的实验性偏好筛选。");
     if (message.type === "claimPreferenceFeedback") {
       if (!pageTab || !s.preferenceFeedbackEnabled || !Number.isFinite(message.score) || message.score >= s.preferenceFeedbackThreshold) return { allowed: false };
-      const state = await localRequest(statusPath, s, null, "GET");
+      const state = await preferenceService.status();
       if (!state.ready) return { allowed: false };
       const id = String(message.id || "").slice(0, 512);
       if (!id) return { allowed: false };
@@ -284,28 +265,14 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
       const id = String(message.id || "").trim().slice(0, 512);
       const title = String(message.title || "").trim().slice(0, 300);
       if (!id || !title || !Number.isInteger(message.rating) || message.rating < 0 || message.rating > 3) throw new Error("无效的偏好标注。");
-      const result = await localRequest("/v1/preferences/labels", s, { id, title, rating: message.rating });
-      // revision 改变时通知所有标签页丢弃旧评分；避免训练版本与过滤结果不一致。
-      await browser.storage.local.set({ preferenceRevision: result.revision });
-      return result;
+      return preferenceService.label({ id, title, rating: message.rating });
     }
     const items = (Array.isArray(message.items) ? message.items : []).slice(0, 20).map(item => ({
       id: String(item.id || "").trim().slice(0, 512), title: String(item.title || "").trim().slice(0, 300)
     })).filter(item => item.id && item.title);
-    if (!items.length) return { ...(await localRequest(statusPath, s, null, "GET")), scores: [] };
-    const result = await localRequest("/v1/preferences/score", s, { items });
-    if (!result.taskId) return result;
-    try {
-      const deadline = Date.now() + 120000;
-      while (Date.now() < deadline) {
-        await new Promise(resolve => setTimeout(resolve, 250));
-        const task = await localRequest(`/v1/preferences/tasks/${result.taskId}`, s, null, "GET");
-        if (task.status === "failed") throw new Error(task.message);
-        if (task.status === "done") return { ...result, ...task };
-      }
-      throw new Error("偏好标题推理超时，视频保持可见。");
-    } finally { localRequest(`/v1/preferences/tasks/${result.taskId}`, s, null, "DELETE").catch(() => {}); }
+    return preferenceService.score(items);
   }
+
   if (message.type === "recordFilters") {
     if (!pageTab?.url?.startsWith("https://www.bilibili.com/")) return;
     await recordFilters(message.records);
@@ -345,7 +312,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
 });
 browser.tabs.onRemoved.addListener(tabId => {
   BiliSpeech.cancel(tabId);
-  if (preferenceSessions.delete(tabId)) void syncPreferenceRuntime();
+  if (preferenceSessions.delete(tabId)) void syncPreferenceRuntime().catch(() => {});
   if (jobs.get(tabId)?.busy) closedTabs.add(tabId);
   else jobs.delete(tabId);
 });

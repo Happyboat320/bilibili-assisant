@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Bilibili 助手",
-  "version": "1.4.2",
-  "description": "过滤广告、关键词和短视频，优先提取官方字幕，支持插件内置语音识别和外置偏好模型。",
+  "version": "1.5.0",
+  "description": "过滤广告、关键词和短视频，提取字幕，插件内置语音识别和个人偏好模型训练。",
   "browser_specific_settings": {
     "gecko": {
       "id": "bilibili-assistant@local.tools",
@@ -25,7 +25,6 @@
     "https://api.bilibili.com/*",
     "https://*.hdslb.com/*",
     "https://*.bilibili.com/*",
-    "http://127.0.0.1:8767/*",
     "https://*.bilivideo.com/*",
     "https://*.bilivideo.cn/*",
     "https://huggingface.co/*",
@@ -39,6 +38,8 @@
       "shared.js",
       "wbi.js",
       "speech.js",
+      "preference-store.js",
+      "preference-service.js",
       "background.js"
     ]
   },

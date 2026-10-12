@@ -1,0 +1,17 @@
+# 浏览器偏好模型 1.5.0 验证
+
+验证环境：Firefox 155.0.1，CPU，独立临时配置，真实 `Xenova/paraphrase-multilingual-MiniLM-L12-v2` 量化 ONNX 权重。测试模型从公开文件下载后预置到测试 Cache Storage，发布插件首次运行自行下载。
+
+|检查|结果|
+|自动化后台、DOM、语音、训练头和偏好服务测试|49 项通过|
+|真实 Firefox 双向设置同步|39 项通过|
+|真实 MiniLM、45 轮训练、评分、保存、Worker 恢复|10 项通过|
+|退出并重新启动 Firefox，同一配置恢复|10 项通过；相同标题评分与关闭前一致|
+|web-ext lint|0 错误、0 警告、0 notices|
+|发布 XPI|包含两个 Worker 与全部后台脚本，无 Python 文件，无 localhost 服务权限|
+
+训练样本为 `tests/fixtures/preference_titles.json` 中前 31 条训练标题。前 30 条只保存标注，第 31 条后启动真实编码与训练。训练损失约从 0.6902 降至 0.22，当前机器首次训练、评分与 Worker 恢复检查约 31 秒，重启后的恢复检查约 4 秒。这些是功能检查与单机耗时，不是泛化准确率或通用性能基准。
+
+数学检查使用原 PyTorch 1.4.2 的固定权重和 token 输入，比较前向 logits、BCE 损失及各参数的梯度抽样；另外验证 padding 不影响真实 token 的评分、真实反向传播使损失下降、权重序列化后评分一致和张量释放。参考值在 `tests/fixtures/preference-head-parity.json`，运行测试无需安装 Python。
+
+复现命令见 [开发文档](../docs/development.md)。旧 Python 150 标题学习曲线保留为历史报告，不作为浏览器新版准确率。

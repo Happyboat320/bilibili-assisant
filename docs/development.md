@@ -2,65 +2,37 @@
 
 ## 文件结构
 
-```text
-bilibili-assistant/
-  extension/              Firefox 扩展（中文 UI 与注释）
-    manifest.json         权限、页面匹配和后台声明
-    shared.js             过滤逻辑、字幕格式化
-    wbi.js                B 站 WBI 参数签名
-    background.js         官方字幕、内置识别调度、文件下载
-    speech.js             音轨下载、解码、识别队列
-    speech-worker.js      构建生成的模型 Worker
-    vendor/               构建生成的 WASM 与第三方许可证
-    content.js            视频卡片识别与页面字幕按钮
-    preference.js         卡片标注菜单、批量标题评分与可选反馈
-    options.* / popup.*   设置页与工具栏弹窗
-  backend/
-    server.py             外置偏好 API 与令牌认证
-    requirements.txt      基础运行依赖
-    requirements-preference.txt  可选偏好依赖
-    preferences.py        个人数据、异步训练及推理任务
-    preference_model.py   CPU Transformer + MLP
-    runtime.py            页面会话暂停信号
-    tests/                本地接口与安全边界测试
-  tests/                  扩展流程及动态 DOM 测试
-  src/speech-worker.js    内置 Whisper Worker 源码
-  scripts/build-speech.mjs  浏览器 CPU WASM 构建
-  scripts/package.py      仅打包 extension/ 的 XPI 工具
-  scripts/benchmark_preferences.py  20–120 样本学习曲线
-  tests/fixtures/         150 条模拟标题
-  reports/preference-benchmark/     实测报告、分数与 CSV
-  docs/                   安装、使用与开发文档
-  artifacts/              生成的插件包
-```
+- `extension/`：Firefox 插件，后台字幕处理、设置同步、偏好标注和会话控制。
+- `extension/preference-service.js`：标注持久化、训练调度、评分版本和 Worker 生命周期。
+- `extension/preference-store.js`：IndexedDB 训练头保存。
+- `src/preference-worker.js`：MiniLM ONNX token 编码、训练与推理队列。
+- `src/preference-head.mjs`：TensorFlow.js CPU Transformer + MLP 与 AdamW 训练。
+- `src/speech-worker.js`：Whisper CPU WASM 识别。
+- `scripts/build-speech.mjs`：打包两个 Worker、WASM 与第三方许可证。
+- `scripts/package.mjs`：仅打包 `extension/` 到 XPI。
+- `scripts/check-firefox.mjs`、`scripts/firefox/`：独立配置中的真实浏览器检查。
+- `tests/`：后台流程、动态 DOM、训练数学与服务生命周期测试。
+- `reports/preference-benchmark/`：旧 Python 模型的历史基准报告。
 
 ## 检查与打包
 
-在项目目录运行：
+需要 Node.js 20 以上和桌面 Firefox 142 以上，无需 Python。
 
 ```bash
 npm ci --ignore-scripts
 npm run build
 npm test
-python3 scripts/check-settings-firefox.py
-npm install -g web-ext
 npm run lint
+npm run test:firefox
+npm run cache:preference
+npm run test:preference:firefox
 npm run package
 ```
 
-Firefox 设置检查使用独立临时配置，临时载入测试插件，验证五个共有开关的双向同步、时长更新、无效输入隔离和多窗口同时保存；不会使用日常浏览器配置。
+`npm run lint` 需要已安装 `web-ext`。Firefox 检查使用独立临时配置，临时载入测试扩展，不使用日常浏览器数据；可用 `FIREFOX_BIN` 指定 Firefox 路径。设置检查覆盖所有共有开关的双向同步、时长、输入错误隔离与并发保存。
 
-后端接口测试不需下载基础模型；安装 CPU torch 后还会运行真实训练头测试（未安装时明确跳过相应测试）：
+真实偏好检查先用 `cache:preference` 把公开 ONNX 与分词器下载到忽略的 `artifacts/minilm/`。可用 `HF_ENDPOINT` 指定源。检查把这些真实权重预置到独立 Firefox 的 Cache Storage，验证编码、45 轮训练、保存和重启恢复；测试缓存不进入发布 XPI。合成数据仅用于功能验证，不是泛化准确率基准。
 
-```bash
-python3 -m venv .test-venv
-.test-venv/bin/python -m pip install -r backend/requirements.txt 'httpx>=0.27,<1'
-.test-venv/bin/python -m pip install --index-url https://download.pytorch.org/whl/cpu 'torch>=2.6,<3'
-.test-venv/bin/python -m unittest discover -s backend/tests -v
-```
+训练头数学测试使用迁移前 PyTorch 1.4.2 的固定输出、BCE 损失和参数梯度作为参考，运行测试无需 PyTorch。真实训练测试检查损失下降、掩码隔离、权重重载一致和张量释放。后台与 DOM 测试模拟网络和模型结果；真实 Firefox 检查补充实际 ONNX/WASM 和训练运行。
 
-测试覆盖过滤边界、动态卡片与关闭恢复、字幕预览和播放跳转、跨分 P 隔离、剪贴板导出、下载路径、历史去重与 100 条上限、历史安全渲染和清空、字幕格式、WBI、官方字幕优先与内置回退、认证、音轨 URL 校验、16 kHz 单声道解码、识别排队与页面关闭取消；新增偏好功能默认关闭、30/31 条门槛、标注更新、CPU 训练 / 重载 / 推理、低分隐藏与关闭恢复、原生菜单及限速反馈、会话关闭 / 重开以及模型持久化。单元测试中的网络、字幕识别结果及 MiniLM token 特征使用模拟数据；Transformer + MLP 的训练、保存、重载和评分使用真实 CPU PyTorch。另外的 150 标题学习曲线使用真实预训练 MiniLM 和训练头。仍未完成真实 B 站登录页面与实际音频的端到端验证。
-
-构建只打包浏览器 CPU WASM 运行时；字幕模型数据首次使用时下载。`src/` 保留可审阅源代码，`extension/speech-worker.js` 和 `extension/vendor/` 是生成文件，已加入 `.gitignore`。更新依赖后重新运行构建。
-
-Firefox 155 的独立配置实测已验证：生成的模型 Worker 启动、HTTP 模型数据的 Cache Storage 读写、CPU WASM 的 ONNX 推理，以及 16 kHz 音频解码。完整 Whisper 识别和真实 B 站音轨仍需端到端验证。
+构建只使用本地安装的 JavaScript 依赖；运行时可执行代码与 WASM 都随插件打包。模型数据首次使用时下载。生成的 `extension/*-worker.js`、`extension/vendor/` 和 `artifacts/` 均由 `.gitignore` 排除。

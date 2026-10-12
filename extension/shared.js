@@ -4,7 +4,7 @@
   const DEFAULTS = Object.freeze({
     filterAds: true, filterKeywords: false, keywords: "", keywordScope: "title",
     filterDuration: false, minDuration: 60, subtitlesEnabled: true,
-    localFallback: false, backendToken: "", model: "small", modelSource: "mirror", language: "auto",
+    localFallback: false, preferenceModelSource: "mirror", model: "small", modelSource: "mirror", language: "auto",
     subtitleLanguage: "auto", format: "srt", downloadDirectory: "", askDownloadLocation: false,
     preferenceEnabled: false, preferenceThreshold: 0.35,
     preferenceFeedbackEnabled: false, preferenceFeedbackThreshold: 0.08
@@ -19,7 +19,7 @@
     s.minDuration = Math.min(86400, Math.max(0, Number(s.minDuration) || 0));
     s.keywords = String(s.keywords || "").slice(0, 10000);
     s.keywordScope = s.keywordScope === "titleAndOwner" ? "titleAndOwner" : "title";
-    s.backendToken = String(s.backendToken || "").trim();
+    s.preferenceModelSource = s.preferenceModelSource === "huggingface" ? "huggingface" : "mirror";
     s.model = ["small", "base"].includes(s.model) ? s.model : DEFAULTS.model;
     s.modelSource = s.modelSource === "huggingface" ? "huggingface" : "mirror";
     s.language = ["auto", "zh", "en"].includes(s.language) ? s.language : "auto";

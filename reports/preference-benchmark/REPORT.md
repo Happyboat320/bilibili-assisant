@@ -1,4 +1,6 @@
-# 模拟用户偏好测试报告
+# Python 版本历史偏好测试报告
+
+此报告来自迁移前的 PyTorch 模型；1.5.0 的浏览器版本使用量化 ONNX 编码和 TensorFlow.js 训练，以下数据不能作为新版准确率。原实现与复现脚本保存在 Git 基线提交 `05f5b0f`。
 
 真实 `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` token 嵌入 + CPU Transformer/MLP；120 条训练、固定 30 条测试（喜欢/不喜欢各 15）。
 

@@ -41,7 +41,7 @@ function harness({ enabled = true, count = 31, native = false, automatic = false
           }
           return { allowed: true };
         }
-        if (message.type === "preferenceStatus") { if (fail) throw new Error("服务不可用"); return state; }
+        if (message.type === "preferenceStatus") { if (fail) throw new Error("内置模型不可用"); return state; }
         if (message.type === "preferenceScore") return { ...state, scores: message.items.map(item => ({ ...item, score: item.title.includes("低分") ? 0.02 : 0.9 })) };
         if (message.type === "preferenceLabel") { state = { ...state, count: state.count + 1, ready: false }; return state; }
         throw new Error("unexpected message " + message.type);
@@ -136,7 +136,7 @@ test("显式开启自动反馈后只点击明确的不感兴趣，不点击举�
   } finally { h.close(); }
 });
 
-test("本地服务不可用时保留所有视频，展示错误", async () => {
+test("内置模型失败时保留所有视频，展示错误", async () => {
   const h = harness({ fail: true });
   try {
     await wait(650);

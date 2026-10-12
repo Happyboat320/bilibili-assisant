@@ -8,8 +8,8 @@ const vendor = path.join(root, 'extension/vendor');
 await rm(vendor, { recursive: true, force: true });
 await mkdir(vendor, { recursive: true });
 await build({
-  entryPoints: [path.join(root, 'src/speech-worker.js')],
-  outfile: path.join(root, 'extension/speech-worker.js'),
+  entryPoints: [path.join(root, 'src/speech-worker.js'), path.join(root, 'src/preference-worker.js')],
+  outdir: path.join(root, 'extension'),
   bundle: true, platform: 'browser', format: 'esm', target: 'firefox142',
   minify: true, legalComments: 'eof',
   external: ['./vendor/ort-wasm-simd-threaded.mjs'],
@@ -42,4 +42,5 @@ for (const [pkg, target] of [['@huggingface/transformers', 'TRANSFORMERS-LICENSE
   await copyFile(path.join(root, 'node_modules', pkg, 'LICENSE'), path.join(vendor, target));
 }
 await copyFile(path.join(root, 'src/ONNX-LICENSE'), path.join(vendor, 'ONNX-LICENSE'));
-console.log('内置字幕 Worker 和 WASM 已构建。');
+await copyFile(path.join(root, 'src/TENSORFLOW-LICENSE'), path.join(vendor, 'TENSORFLOW-LICENSE'));
+console.log('内置字幕、偏好训练 Worker 和 WASM 已构建。');

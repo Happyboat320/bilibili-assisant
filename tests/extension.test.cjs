@@ -65,9 +65,9 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
   const pending = [];
   const copied = [];
   const speech = [];
-  const storage = { settings: { localFallback, backendToken: "test-token", ...settings } };
+  const preferenceLabels = [];
+  const storage = { settings: { localFallback, ...settings } };
   let tabUrl = "https://www.bilibili.com/video/BV1xx?p=2";
-  let preferenceItems = [];
   const scriptRoot = path.join(__dirname, "../extension");
   const browser = {
     runtime: { id: "test@bili", getURL: () => "moz-extension://test/", onMessage: { addListener(fn) { listener = fn; } } },
@@ -78,6 +78,14 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
     downloads: { async download(value) { if (downloadFails) throw new Error("下载取消"); downloads.push(value); return 1; } }
   };
   const context = vm.createContext({ browser, console, URL, URLSearchParams, TextEncoder, Blob, AbortSignal,
+    BiliPreferenceService: () => ({
+      async setActive() {},
+      async status() { return { count: preferenceReady ? 31 : 30, ready: preferenceReady, modelVersion: 1 }; },
+      async label(value) { preferenceLabels.push(value); storage.preferenceRevision = 2; return { count: 31, ready: false, revision: 2 }; },
+      async score(items) { return { count: preferenceReady ? 31 : 30, ready: preferenceReady, modelVersion: 1,
+        scores: preferenceReady ? items.map(item => ({ ...item, score: 0.1 })) : [] }; },
+      async reset() { return { count: 0, revision: 3, ready: false }; }
+    }),
     BiliSpeech: { async transcribe(tabId, payload, progress) {
       speech.push({ tabId, payload });
       if (speechError) throw new Error("模型下载失败");
@@ -94,20 +102,12 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
       else if (String(url).includes("/v2")) data = apiError ? { code: -403, message: "denied" } : { code: 0, data: { subtitle: { subtitles: tracks } } };
       else if (String(url).includes("/playurl")) data = { code: 0, data: { dash: { audio: [{ baseUrl: "https://test.bilivideo.com/audio.m4s", bandwidth: 300 }] } } };
       else if (String(url).includes("hdslb.com")) data = { body: [{ from: 0, to: 1, content: "官方字幕" }] };
-      else if (String(url).includes("/v1/preferences/status")) data = { count: preferenceReady ? 31 : 30, ready: preferenceReady, modelVersion: 1 };
-      else if (String(url).endsWith("/v1/preferences/runtime")) data = { ready: false };
-      else if (String(url).endsWith("/v1/preferences/labels")) data = { count: 31, ready: false, revision: 2 };
-      else if (String(url).endsWith("/v1/preferences/score")) {
-        preferenceItems = JSON.parse(options.body).items;
-        data = preferenceReady ? { count: 31, ready: true, taskId: "pref1", modelVersion: 1 } : { count: 30, ready: false, scores: [] };
-      }
-      else if (String(url).endsWith("/v1/preferences/tasks/pref1")) data = options.method === "DELETE" ? { ok: true } : { status: "done", ready: true, modelVersion: 1, scores: preferenceItems.map(item => ({ ...item, score: 0.1 })) };
       else throw new Error("Unexpected URL " + url);
       return { ok: true, async json() { return data; } };
     }
   });
   for (const file of ["shared.js", "wbi.js", "background.js"]) vm.runInContext(fs.readFileSync(path.join(scriptRoot, file), "utf8"), context);
-  return { downloads, states, requests, copied, storage, speech,
+  return { downloads, states, requests, copied, storage, speech, preferenceLabels,
     async enablePreference() {
       await listener({ type: "preferencePageReady", pageId: "test-page" }, { id: "test@bili", tab: { id: 1, url: tabUrl } });
       await listener({ type: "setPreferenceSession", tabId: 1, enabled: true }, { id: "test@bili" });
@@ -126,7 +126,7 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
   };
 }
 
-test("两处设置同时保存不同字段时保留其他规则和服务令牌", async () => {
+test("两处设置同时保存不同字段时保留其他规则", async () => {
   const bg = makeBackground({ settings: { keywords: "剧透", minDuration: 120 } });
   await Promise.all([
     bg.message({ type: "saveSettings", settings: { filterAds: false } }),
@@ -136,19 +136,18 @@ test("两处设置同时保存不同字段时保留其他规则和服务令牌",
   assert.equal(bg.storage.settings.localFallback, true);
   assert.equal(bg.storage.settings.keywords, "剧透");
   assert.equal(bg.storage.settings.minDuration, 120);
-  assert.equal(bg.storage.settings.backendToken, "test-token");
 });
 
-test("Firefox 设置标签页携带 sender.tab 时仍能读取历史与令牌并保存，内容脚本仍被拒绝", async () => {
+test("Firefox 设置标签页携带 sender.tab 时仍能读取历史与设置并保存，内容脚本仍被拒绝", async () => {
   const bg = makeBackground();
   const sender = { id: "test@bili", url: "moz-extension://test/options.html", tab: { id: 2, url: "moz-extension://test/options.html" } };
   const settings = await bg.message({ type: "getSettings" }, sender);
-  assert.equal(settings.backendToken, "test-token");
+  assert.equal(settings.filterAds, true);
   assert.equal((await bg.message({ type: "getFilterHistory" }, sender)).length, 0);
   await bg.message({ type: "saveSettings", settings: { filterAds: false } }, sender);
   assert.equal(bg.storage.settings.filterAds, false);
   const pageSender = { id: "test@bili", url: "https://www.bilibili.com/", tab: { id: 1, url: "https://www.bilibili.com/" } };
-  assert.equal((await bg.message({ type: "getSettings" }, pageSender)).backendToken, "");
+  assert.equal((await bg.message({ type: "getSettings" }, pageSender)).filterAds, false);
   await assert.rejects(bg.message({ type: "saveSettings", settings: { filterAds: true } }, pageSender), /页面不能/);
   await assert.rejects(bg.message({ type: "getFilterHistory" }, pageSender), /历史仅在/);
 });
@@ -224,7 +223,7 @@ test("过滤历史跨标签页并发保存，去重，只保留最近 100 条且
 });
 
 test("无字幕时使用内置识别，无需外置服务或令牌", async () => {
-  const bg = makeBackground({ localFallback: true, settings: { backendToken: "" } });
+  const bg = makeBackground({ localFallback: true });
   await bg.start();
   assert.equal(bg.downloads.length, 1);
   assert.equal(bg.speech.length, 1);
@@ -265,7 +264,7 @@ test("偏好开关和阈值默认安全，分数无效时不隐藏，边界等�
   for (const preferenceScore of [null, undefined, NaN, Infinity]) assert.equal(A.filterReason({ preferenceScore }, s), null);
 });
 
-test("后台拒绝关闭功能时推理，打开后按异步任务获取评分", async () => {
+test("后台拒绝关闭功能时推理，打开后调用内置服务获取评分", async () => {
   const disabled = makeBackground();
   await assert.rejects(disabled.message({ type: "preferenceScore", items: [{ id: "1", title: "中文 title" }] }), /手动开启/);
   assert.equal(disabled.requests.length, 0);
@@ -276,7 +275,7 @@ test("后台拒绝关闭功能时推理，打开后按异步任务获取评分",
   assert.equal(result.scores[0].score, 0.1);
   assert.equal(result.scores[0].title, "中文 title");
   await new Promise(setImmediate);
-  assert.ok(bg.requests.some(r => r.url.includes("/preferences/tasks/pref1") && r.options.method === "DELETE"));
+  assert.equal(bg.requests.length, 0);
 });
 
 test("四级标注验证数值并通知所有标签页偏好版本变化", async () => {
@@ -286,7 +285,8 @@ test("四级标注验证数值并通知所有标签页偏好版本变化", async
   const result = await bg.message({ type: "preferenceLabel", tabId: 1, id: "1", title: "视频", rating: 2 });
   assert.equal(result.count, 31);
   assert.equal(bg.storage.preferenceRevision, 2);
-  assert.equal(JSON.parse(bg.requests.find(r => r.url.endsWith("/labels")).options.body).rating, 2);
+  assert.equal(bg.preferenceLabels[0].rating, 2);
+  assert.equal(bg.requests.length, 0);
 });
 
 test("自动不感兴趣的持久化领取锁能去重、限速且默认禁用", async () => {

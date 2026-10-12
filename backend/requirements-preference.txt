@@ -1,2 +1,0 @@
-# 可选偏好模型依赖。先单独按 docs/installation.md 安装 CPU 版 torch，避免下载 CUDA 包。
-sentence-transformers>=3.4,<6

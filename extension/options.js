@@ -24,7 +24,7 @@
     } catch (error) { preferenceState.textContent = error.message; }
   });
   document.querySelector("#preference-reset").addEventListener("click", async () => {
-    // 本机训练数据不可恢复，按钮操作时明确告知用户后才删除。
+    // 浏览器训练数据不可恢复，按钮操作时明确告知用户后才删除。
     if (!confirm("清空全部偏好标注和训练头？基础 MiniLM 权重会保留，之后需重新积累 31 条标注。")) return;
     try { showPreferenceState(await browser.runtime.sendMessage({ type: "resetPreferences" })); }
     catch (error) { preferenceState.textContent = error.message; }
@@ -94,12 +94,25 @@
     void save(event.target).catch(e => { status.textContent = e.message; });
   });
   window.addEventListener("focus", () => settingsUI.refresh().catch(e => { status.textContent = e.message; }));
-  document.querySelector("#check-backend").addEventListener("click", async () => {
+  document.querySelector("#preference-export").addEventListener("click", async () => {
     try {
-      if (!await save()) return;
-      status.textContent = "正在连接偏好服务…";
-      const result = await browser.runtime.sendMessage({ type: "backendCheck" });
-      status.textContent = `偏好服务连接成功：${result.device}。`;
-    } catch (error) { status.textContent = error.message; }
+      const data = await browser.runtime.sendMessage({ type: "exportPreferenceLabels" });
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      try { await browser.downloads.download({ url, filename: "preferences-export.json", saveAs: true }); }
+      finally { setTimeout(() => URL.revokeObjectURL(url), 60000); }
+      preferenceState.textContent = `已导出 ${data.labels.length} 条标注。`;
+    } catch (error) { preferenceState.textContent = error.message; }
+  });
+  const fileInput = document.querySelector("#preference-file");
+  document.querySelector("#preference-import").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", async () => {
+    try {
+      const file = fileInput.files[0];
+      if (!file) return;
+      if (file.size > 4 * 1024 * 1024) throw new Error("标注文件超过 4 MiB。 ");
+      const data = JSON.parse(await file.text());
+      showPreferenceState(await browser.runtime.sendMessage({ type: "importPreferenceLabels", data }));
+    } catch (error) { preferenceState.textContent = error.message; }
+    finally { fileInput.value = ""; }
   });
 })();

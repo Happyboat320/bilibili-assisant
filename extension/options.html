@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Bilibili 助手设置</title><link rel="stylesheet" href="ui.css"></head>
+<body><main>
+  <header class="cover">
+    <div class="cover__top">
+      <img class="cover__mark" src="icons/icon.svg" alt="">
+      <div>
+        <h1>Bilibili 助手</h1>
+        <p class="cover__lede">适用于 www.bilibili.com。设置保存在当前 Firefox 中，修改后已打开的页面会立即更新。</p>
+      </div>
+    </div>
+    <div class="band" aria-hidden="true"></div>
+  </header>
+
+  <form id="settings-form">
+    <section class="group" aria-labelledby="filter-heading">
+      <h2 class="group__title" id="filter-heading">视频过滤</h2>
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="filterAds"><span class="row__text">
+        <span class="row__title">过滤广告卡片</span>
+        <span class="row__hint">只识别站点明确标记的推广卡片和广告链接，无法判断视频里的口播广告。</span>
+      </span></label>
+
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="filterKeywords"><span class="row__text">
+        <span class="row__title">过滤关键词</span>
+        <span class="row__hint">按文字包含匹配，忽略英文大小写，不使用正则表达式。</span>
+      </span></label>
+      <div class="row row--detail">
+        <label class="field"><span class="field__label">关键词，每行一个，也可用逗号分隔</span>
+          <textarea name="keywords" rows="4" placeholder="剧透&#10;抽奖"></textarea></label>
+        <label class="field"><span class="field__label">匹配范围</span>
+          <select name="keywordScope"><option value="title">视频标题</option><option value="titleAndOwner">标题和 UP 主名字</option></select></label>
+      </div>
+
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="filterDuration"><span class="row__text">
+        <span class="row__title">过滤短视频</span>
+        <span class="row__hint">等于阈值的视频保留；没有显示时长的卡片和直播不参与。</span>
+      </span></label>
+      <div class="row row--detail">
+        <label class="field field--inline"><span class="field__label">隐藏短于</span>
+          <input class="num" name="minDuration" type="number" min="0" max="86400" step="1" aria-label="最小时长（秒）">
+          <span class="field__label">秒的视频</span></label>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="subtitle-heading">
+      <h2 class="group__title" id="subtitle-heading">字幕</h2>
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="subtitlesEnabled"><span class="row__text">
+        <span class="row__title">在视频页显示字幕工具</span>
+        <span class="row__hint">可预览、复制正文和下载。优先使用官方字幕轨，包括作者上传和 B 站 AI 字幕；多 P 视频只处理当前 P。</span>
+      </span></label>
+      <div class="row row--detail">
+        <div class="pair">
+          <label class="field"><span class="field__label">优先的字幕语言</span>
+            <select name="subtitleLanguage"><option value="auto">任意语言，人工字幕优先</option><option value="zh">中文</option><option value="en">英文</option></select></label>
+          <label class="field"><span class="field__label">下载格式</span>
+            <select name="format"><option value="srt">SRT，播放器通用</option><option value="vtt">WebVTT</option><option value="txt">纯文本 TXT</option></select></label>
+        </div>
+        <label class="field"><span class="field__label">保存到 Downloads 下的子目录</span>
+          <input name="downloadDirectory" type="text" placeholder="留空则直接保存到 Downloads，例如 Bilibili/字幕">
+          <span class="field__hint">插件只能自动保存到 Firefox 下载目录的子目录。要保存到其他磁盘或绝对路径，请打开下方的保存对话框。</span></label>
+      </div>
+
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="askDownloadLocation"><span class="row__text">
+        <span class="row__title">每次下载时选择保存位置</span>
+      </span></label>
+
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="localFallback"><span class="row__text">
+        <span class="row__title">没有官方字幕时，用内置语音识别</span>
+        <span class="row__hint">画面里烧录的字幕也会走音频识别，不做画面 OCR。识别在插件内运行，保留原语言，支持最长 3 小时的音轨。首次使用会下载并缓存模型。</span>
+      </span></label>
+      <div class="row row--detail">
+        <div class="pair">
+          <label class="field"><span class="field__label">识别模型</span>
+            <select name="model"><option value="small">Whisper small，准确度优先</option><option value="base">Whisper base，更省内存</option></select></label>
+          <label class="field"><span class="field__label">音频语言</span>
+            <select name="language"><option value="auto">自动检测，适合中英混说</option><option value="zh">中文</option><option value="en">英文</option></select></label>
+        </div>
+        <label class="field"><span class="field__label">模型下载源</span>
+          <select name="modelSource"><option value="mirror">HF Mirror，大陆镜像</option><option value="huggingface">Hugging Face</option></select>
+          <span class="field__hint">下载源只接收模型文件请求，音频不离开插件。切换后可能需要重新缓存模型。</span></label>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="preference-heading">
+      <h2 class="group__title" id="preference-heading">我的视频偏好<span class="tag">实验性</span></h2>
+      <p class="lede">用你的标注训练一个只看标题的本地模型，隐藏你大概率不想看的视频。每次打开或刷新网站后，需要在工具栏里手动开启；阈值、标注和模型会一直保留。</p>
+      <p class="lede">开启后，标题旁的三点菜单会多出“很喜欢、喜欢、不喜欢、很不喜欢”。标注超过 30 个不同视频后才开始训练和筛选，重复标注会更新原来的标签。</p>
+
+      <label class="field field--inline"><span class="field__label">隐藏分数低于</span>
+        <input class="num" name="preferenceThreshold" type="number" min="0" max="1" step="0.01" aria-label="偏好隐藏阈值">
+        <span class="field__label">的视频</span></label>
+      <p class="field__hint field__hint--block">分数只依据标题，不是校准后的概率；样本少时可能误判。</p>
+
+      <label class="row"><input class="sw" type="checkbox" role="switch" name="preferenceFeedbackEnabled"><span class="row__text">
+        <span class="row__title">对极低分视频自动点击“不感兴趣”</span>
+        <span class="row__hint">会影响 B 站给你的推荐。只在前台标签页、模型就绪且能识别原生菜单时尝试；全局每 10 秒最多一次，同一视频每天一次，找不到明确入口就跳过。</span>
+      </span></label>
+      <div class="row row--detail">
+        <label class="field field--inline"><span class="field__label">分数低于</span>
+          <input class="num" name="preferenceFeedbackThreshold" type="number" min="0" max="1" step="0.01" aria-label="极低分反馈阈值">
+          <span class="field__label">时反馈，不高于隐藏阈值</span></label>
+      </div>
+
+      <label class="field"><span class="field__label">偏好服务令牌</span>
+        <input name="backendToken" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴 backend/server.py 终端输出的令牌">
+        <span class="field__hint">本地服务地址固定为 <code>http://127.0.0.1:8767</code>，只用于偏好模型，字幕识别不使用它。令牌只保存在本机。</span></label>
+      <p class="field__hint field__hint--block">模型在 CPU 上运行：多语言 MiniLM-L12（冻结 token 嵌入）→ 1 层 Transformer → MLP。标题、标签和训练权重只存在本机，首次使用需联网下载基础模型。</p>
+
+      <div class="actions">
+        <button id="check-backend" class="btn btn--quiet" type="button">检查偏好服务</button>
+        <button id="preference-check" class="btn btn--quiet" type="button">查看模型状态</button>
+        <button id="preference-reset" class="btn btn--quiet btn--danger" type="button">清空标注和模型</button>
+      </div>
+      <p id="preference-state" class="status" role="status" aria-live="polite">尚未检查本地偏好模型。</p>
+    </section>
+
+    <div class="savebar">
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <button class="btn" type="submit">保存设置</button>
+    </div>
+  </form>
+
+  <section class="panel" aria-labelledby="history-heading">
+    <div class="panel__head">
+      <h2 id="history-heading">最近过滤的视频</h2>
+      <button id="clear-history" class="btn btn--quiet" type="button">清空历史</button>
+    </div>
+    <p class="panel__lede">按过滤时间倒序，同一视频只记一次，最多 100 条。历史只保存在本机，关闭过滤不会删除它。</p>
+    <p id="history-empty" class="empty">还没有过滤过视频。打开 B 站首页或搜索页，命中规则的卡片会记录在这里。</p>
+    <div class="history-scroll"><table id="history-table" hidden>
+      <thead><tr><th>视频 / UP 主</th><th>原因</th><th>时长</th><th>过滤时间</th></tr></thead>
+      <tbody id="history-body"></tbody>
+    </table></div>
+  </section>
+</main><script src="shared.js"></script><script src="settings-ui.js"></script><script src="options.js"></script></body></html>

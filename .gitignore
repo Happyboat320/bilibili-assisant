@@ -1,0 +1,47 @@
+# Python 虚拟环境、缓存与测试产物
+.venv/
+venv/
+.test-venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# 本地令牌、个人标注与模型缓存
+backend/.runtime/
+backend/models/
+.env
+.env.*
+!.env.example
+
+# Node 依赖、扩展打包与覆盖率
+node_modules/
+artifacts/
+web-ext-artifacts/
+coverage/
+*.xpi
+
+# 日志、临时文件与系统文件
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# 由 npm run build 生成的内置识别资源
+extension/vendor/
+extension/speech-worker.js
+extension/preference-worker.js
+
+# 浏览器测试配置与个人数据导出
+firefox-profile/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+preferences-export*.json

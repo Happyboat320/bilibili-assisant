@@ -1,0 +1,75 @@
+{
+  "manifest_version": 2,
+  "name": "Bilibili 助手",
+  "version": "1.4.2",
+  "description": "过滤广告、关键词和短视频，优先提取官方字幕，支持插件内置语音识别和外置偏好模型。",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "bilibili-assistant@local.tools",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "clipboardWrite",
+    "activeTab",
+    "webRequest",
+    "webRequestBlocking",
+    "https://www.bilibili.com/*",
+    "https://api.bilibili.com/*",
+    "https://*.hdslb.com/*",
+    "https://*.bilibili.com/*",
+    "http://127.0.0.1:8767/*",
+    "https://*.bilivideo.com/*",
+    "https://*.bilivideo.cn/*",
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*",
+    "https://*.hf.co/*",
+    "unlimitedStorage",
+    "https://hf-mirror.com/*"
+  ],
+  "background": {
+    "scripts": [
+      "shared.js",
+      "wbi.js",
+      "speech.js",
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bilibili.com/*"
+      ],
+      "js": [
+        "shared.js",
+        "preference.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_title": "Bilibili 助手",
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; object-src 'none'"
+}

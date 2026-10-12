@@ -1,0 +1,16 @@
+{
+  "name": "bilibili-assistant-checks",
+  "private": true,
+  "version": "1.4.2",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "lint": "web-ext lint --source-dir extension",
+    "package": "npm run build && python3 scripts/package.py",
+    "build": "node scripts/build-speech.mjs"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "esbuild": "^0.28.2",
+    "jsdom": "^26.1.0"
+  }
+}

@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "synthetic-1-00",
+    "title": "硬核推导：为什么傅里叶变换能分解声音",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-00",
+    "title": "独自徒步四天：穿越无人山谷的完整记录",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-00",
+    "title": "全网爆火的抽象热梗合集：笑到停不下来",
+    "category": "网络热梗",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-00",
+    "title": "新款手机上手：镜头模组和续航是否升级",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-00",
+    "title": "对话急诊医生：她如何面对凌晨三点的生死决定",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-00",
+    "title": "震惊！这个秘密竟然被隐藏了二十年",
+    "category": "标题党",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-01",
+    "title": "户外露营实测：雨夜如何保持睡袋干燥",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-01",
+    "title": "从守恒方程推导湍流：一个完整的数值实验",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-01",
+    "title": "看完直接颠覆认知！最后三秒千万别眨眼",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-01",
+    "title": "访谈一位乡村教师：十年后学生给了什么答案",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-01",
+    "title": "网络热梗盘点：今年最离谱的十个名场面",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-01",
+    "title": "数码评测：三款无线耳机横向对比",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-02",
+    "title": "所有人都错了！专家绝对不会告诉你的真相",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-02",
+    "title": "挑战一天只用表情包说话：朋友当场破防",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-02",
+    "title": "山野纪录：跟着巡护员走一条保护区路线",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-02",
+    "title": "新车试驾：城市通勤油耗与座椅体验",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-02",
+    "title": "硬核讲解：贝叶斯推断如何更新不确定性",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-02",
+    "title": "和纪录片导演聊聊：镜头之外的人生选择",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-03",
+    "title": "不看后悔一辈子！普通人翻身就靠这一招",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-03",
+    "title": "复刻热门鬼畜：这段台词为什么这么洗脑",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-03",
+    "title": "用代码复现经典论文：注意力机制的数学细节",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-03",
+    "title": "周末徒步：寻找城市边缘的一条溪流",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-03",
+    "title": "手机旗舰对决：屏幕亮度谁更高",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-03",
+    "title": "专访野生动物摄影师：如何与危险保持距离",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-04",
+    "title": "户外攀岩入门：保护站为什么比动作重要",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-04",
+    "title": "全网都在删！趁现在赶紧保存这个视频",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-04",
+    "title": "长谈一本书的诞生：编辑与作者的分歧",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-04",
+    "title": "从第一性原理解释超导：电子如何结成对",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-04",
+    "title": "汽车配置表怎么选：高配值得加钱吗",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-04",
+    "title": "梗图大赏：互联网嘴替又上新了",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-05",
+    "title": "深入拆解编译器：语法树如何变成机器指令",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-05",
+    "title": "对话古建筑修复师：一根木梁留下的年代",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-05",
+    "title": "土味热梗挑战：谁能坚持十秒不笑",
+    "category": "网络热梗",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-05",
+    "title": "你被骗了多少年？真相让人背后发凉",
+    "category": "标题党",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-05",
+    "title": "数码开箱：折叠屏铰链与手感体验",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-05",
+    "title": "秋季长线徒步：把每天的海拔变化记录下来",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-06",
+    "title": "终于藏不住了！这件事比你想象的严重",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-06",
+    "title": "直播名场面混剪：弹幕直接笑疯",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-06",
+    "title": "硬核科普：核聚变约束等离子体的难点",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-06",
+    "title": "家用 SUV 横评：后排空间谁更宽敞",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-06",
+    "title": "访谈心理咨询师：倾听比建议更难吗",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-06",
+    "title": "荒野做饭：一口锅完成两天的补给",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-07",
+    "title": "网络流行语科普：这个缩写到底是什么意思",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-07",
+    "title": "千万不要点开！看完你再也回不去了",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-07",
+    "title": "手推卡尔曼滤波：状态估计为什么有效",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-07",
+    "title": "和退役运动员聊失败：领奖台后的普通生活",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-07",
+    "title": "徒步穿越高山草甸：天气突然改变怎么办",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-07",
+    "title": "手机拍照对比：夜景模式与肤色表现",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-08",
+    "title": "全网都在模仿的魔性舞蹈：一学就会",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-08",
+    "title": "平板电脑选购：预算三千元如何搭配",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-08",
+    "title": "99%的人不知道！原来一直都用错了",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-08",
+    "title": "密码学原理：从模运算到零知识证明",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-08",
+    "title": "野外观察：等了三个清晨的鸟类迁徙",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-08",
+    "title": "专访登山向导：为什么有时必须撤退",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-09",
+    "title": "深度对谈记者：一次调查是怎么开始的",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-09",
+    "title": "户外路线规划：如何判断地图上的危险地形",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-09",
+    "title": "惊天反转！短短一分钟改变你的命运",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-09",
+    "title": "深度解析材料疲劳：微裂纹如何传播",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-09",
+    "title": "热门短视频梗集合：今天又被什么洗脑了",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-09",
+    "title": "新能源车试驾：高速续航缩水多少",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-10",
+    "title": "从微分方程看传染病模型：假设与边界",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-10",
+    "title": "数码桌搭：显示器与机械键盘购买清单",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-10",
+    "title": "全世界都炸了！结果居然是这样",
+    "category": "标题党",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-10",
+    "title": "跟随护林员进山：夜间巡护的真实日常",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-10",
+    "title": "访谈海洋科研人员：半年航行改变了什么",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-10",
+    "title": "抽象整活合集：这届网友太会玩",
+    "category": "网络热梗",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-11",
+    "title": "硬核实验：搭建低成本光谱仪并校准误差",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-11",
+    "title": "与公交司机聊城市：清晨第一班车的乘客",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-11",
+    "title": "鬼畜循环播放：一句话也能听一整天",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-11",
+    "title": "徒步日记：第一次走完二十公里山路",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-11",
+    "title": "新款轿车静态体验：内饰做工和储物空间",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-11",
+    "title": "为什么没人敢说？看懂的人已经行动了",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-12",
+    "title": "离谱到不敢相信！这就是现实的真面目",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-12",
+    "title": "手机影像参数解读：一亿像素有什么用",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-12",
+    "title": "对话语言学者：方言里藏着哪些记忆",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-12",
+    "title": "表情包出处考古：原来这张图来自这里",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-12",
+    "title": "冬季露营：安全搭建营地与管理体温",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-12",
+    "title": "量子纠缠的数学描述：不用比喻讲清楚",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-13",
+    "title": "汽车优惠行情：本月哪些车型降价了",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-13",
+    "title": "一步步实现数据库事务：隔离级别的真实含义",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-13",
+    "title": "名场面复读挑战：你能接出多少句",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-13",
+    "title": "访谈消防员：如何训练自己在恐惧中行动",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-13",
+    "title": "重大内幕曝光！普通人再不看就晚了",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-13",
+    "title": "户外定向练习：没有手机如何读等高线",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-14",
+    "title": "数码配件测评：充电宝和快充头的兼容性",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-14",
+    "title": "网络热梗打分：朋友听完直接绷不住",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-14",
+    "title": "长谈音乐制作人：一首歌从念头到完成",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-14",
+    "title": "连夜调查！答案竟然让所有人沉默",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-14",
+    "title": "划艇穿过湿地：记录沿途的水鸟和植物",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-14",
+    "title": "硬核地质：岩石薄片如何揭示板块历史",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-15",
+    "title": "山地徒步装备复盘：哪些东西根本没用上",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-15",
+    "title": "流行语年度回顾：那些突然出现的口头禅",
+    "category": "网络热梗",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-15",
+    "title": "硬核手机拆解：处理器散热与电池布局",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-15",
+    "title": "专访创业失败者：如何重新理解风险",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-15",
+    "title": "概率论进阶：中心极限定理的证明思路",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-15",
+    "title": "太可怕了！原来你每天都在做这件事",
+    "category": "标题党",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-16",
+    "title": "露营不留痕：一次营地清理的全过程",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-16",
+    "title": "解析航天轨道：用数值积分模拟转移轨道",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-16",
+    "title": "别再被蒙在鼓里！高手不会分享的秘诀",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-16",
+    "title": "对话博物馆馆长：文物如何讲述普通人的故事",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-16",
+    "title": "爆梗翻唱合集：熟悉的旋律陌生的词",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-16",
+    "title": "二手车怎么挑：十万元能买哪些车型",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-17",
+    "title": "访谈护理员：照顾失能老人需要什么耐心",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-17",
+    "title": "骑行乡间小路：从清晨到日落的风景",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-17",
+    "title": "只看一次就够了！改变人生的隐藏机会",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-17",
+    "title": "旗舰笔记本评测：跑分、接口与价格",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-17",
+    "title": "评论区整活大赏：高手永远在民间",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-17",
+    "title": "从实验数据辨识系统：控制理论的可复现案例",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-18",
+    "title": "硬核算法：为什么最大流等于最小割",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-18",
+    "title": "挑战复刻神评论：拍成视频到底多尴尬",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-18",
+    "title": "汽车保养记录：换机油与轮胎的费用",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-18",
+    "title": "和田野考古工作者聊一天：发现之前的漫长等待",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-18",
+    "title": "户外急救演练：山路扭伤之后如何撤离",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-18",
+    "title": "网友彻底沸腾！最后结局谁也没想到",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-2-19",
+    "title": "沙漠徒步记录：水量与路线的实际计算",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-4-19",
+    "title": "数码年终榜单：值得入手的十款设备",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-5-19",
+    "title": "这句台词又火了：网友二创合集",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-0-19",
+    "title": "人物访谈：一位农学专家的四十年实验",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-19",
+    "title": "赶紧转给家人！这条消息可能救你一命",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-1-19",
+    "title": "流体力学实验：测量边界层而不是背结论",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "train"
+  },
+  {
+    "id": "synthetic-3-21",
+    "title": "这个答案太炸裂！看懂立刻领先十年",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-2-21",
+    "title": "与自然相处：雨林里的步道和观察笔记",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-3-23",
+    "title": "他们最怕你看见！所谓常识竟然全是骗局",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-5-21",
+    "title": "魔性配音大赛：给动物视频加上热梗",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-2-22",
+    "title": "山脊纵走六小时：在大风中选择回撤",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-5-24",
+    "title": "鬼畜二创混剪：热门台词循环一百遍",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-2-20",
+    "title": "沿着海岸走三天：潮汐决定出发时间",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-3-22",
+    "title": "再晚就没机会了！必须马上知道的绝密消息",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-3-24",
+    "title": "不用解释了！十秒钟教你财富自由",
+    "category": "标题党",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-5-20",
+    "title": "最近爆红的缩写梗：三分钟看懂聊天黑话",
+    "category": "网络热梗",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-0-22",
+    "title": "圆桌对话科学记者：怎样把不确定性说清楚",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-4-21",
+    "title": "电动车横评：辅助驾驶功能的操作差异",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-2-24",
+    "title": "草原露宿日记：听风声也观察温度变化",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-1-23",
+    "title": "手写神经网络反向传播：每个梯度从哪里来",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-1-24",
+    "title": "噪声中的弱信号：锁相放大器的原理与实验",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-4-20",
+    "title": "新一代智能手表体验：健康功能与充电速度",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-4-22",
+    "title": "摄影手机盲测：谁的长焦画面更讨喜",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-3-20",
+    "title": "天塌了？一个细节揭开所有人的谎言",
+    "category": "标题党",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-5-22",
+    "title": "抽象表情包接龙：朋友群聊笑到失控",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-2-23",
+    "title": "野外过夜实录：从找营地到收拾垃圾",
+    "category": "户外",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-1-21",
+    "title": "实证研究入门：如何识别因果而非相关",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-0-24",
+    "title": "和翻译家聊孤独：二十年里的那些句子",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-0-20",
+    "title": "夜班护士口述：理解病人比记住流程更难",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-1-20",
+    "title": "从泊松方程到有限元：网格精度怎样影响误差",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-0-21",
+    "title": "一位盲人钢琴家的长谈：练习、独立与尊严",
+    "category": "访谈",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-0-23",
+    "title": "口述历史：老船工如何记住江河的变化",
+    "category": "访谈",
+    "rating": 2,
+    "liked": true,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-5-23",
+    "title": "网络名场面新合集：每一句都能接下去",
+    "category": "网络热梗",
+    "rating": 0,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-4-23",
+    "title": "车展现场看新车：车机界面与座椅按摩",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-4-24",
+    "title": "蓝牙音箱开箱：低音和便携性如何取舍",
+    "category": "数码汽车",
+    "rating": 1,
+    "liked": false,
+    "split": "test"
+  },
+  {
+    "id": "synthetic-1-22",
+    "title": "图论证明：一条性质如何转化为算法",
+    "category": "硬核",
+    "rating": 3,
+    "liked": true,
+    "split": "test"
+  }
+]

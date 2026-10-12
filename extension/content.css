@@ -1,0 +1,105 @@
+.bili-assistant-hidden { display: none !important; }
+
+/* 注入 B 站页面的部件：变量只挂在自己的根节点上，不污染站点样式。 */
+#bili-assistant-panel, #bili-assistant-preference-menu, .bili-assistant-preference-trigger {
+  --ba-card: #fffdf6;
+  --ba-raised: #fff9d2;
+  --ba-note: #ffebcc;
+  --ba-line: #e8ddbf;
+  --ba-line-cool: #bfddf0;
+  --ba-ink: #0f2438;
+  --ba-ink-2: #3b5169;
+  --ba-ink-3: #5e7286;
+  --ba-action: #03346e;
+  --ba-on-action: #fff9d2;
+  --ba-accent: #8cc0eb;
+  --ba-wash: #eaf4fc;
+  --ba-shadow: 0 1px 2px #03346e14, 0 12px 32px -8px #03346e33;
+}
+@media (prefers-color-scheme: dark) {
+  #bili-assistant-panel, #bili-assistant-preference-menu, .bili-assistant-preference-trigger {
+    --ba-card: #04203a;
+    --ba-raised: #062947;
+    --ba-note: #0a3155;
+    --ba-line: #12395c;
+    --ba-line-cool: #1d4f7c;
+    --ba-ink: #eaf2f9;
+    --ba-ink-2: #b3cce0;
+    --ba-ink-3: #8aa8c0;
+    --ba-action: #6eacda;
+    --ba-on-action: #021526;
+    --ba-accent: #e2e2b6;
+    --ba-wash: #062947;
+    --ba-shadow: 0 1px 2px #0008, 0 16px 40px -10px #000c;
+  }
+}
+
+/* ---------- 视频页右下角面板 ---------- */
+
+#bili-assistant-panel {
+  position: fixed; right: 16px; bottom: 18px; z-index: 10000;
+  width: 400px; max-width: calc(100vw - 32px); max-height: calc(100vh - 36px); overflow: auto;
+  padding: 16px 18px 14px;
+  background: var(--ba-card); color: var(--ba-ink);
+  border: 1px solid var(--ba-line); border-radius: 14px; box-shadow: var(--ba-shadow);
+  font: 13px/1.65 system-ui, "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+/* 顶部细色带，与设置页同源。 */
+#bili-assistant-panel::before {
+  content: ""; display: block; height: 4px; margin: -16px -18px 14px; border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, var(--ba-action) 0 38%, var(--ba-accent) 38% 62%, transparent 62%),
+    repeating-linear-gradient(90deg, var(--ba-accent) 0 3px, transparent 3px 11px);
+}
+#bili-assistant-panel[hidden], #bili-assistant-panel [hidden] { display: none !important; }
+#bili-assistant-panel > span { display: block; overflow-wrap: anywhere; }
+#bili-assistant-panel .bili-assistant-count { color: var(--ba-ink-2); }
+#bili-assistant-panel .bili-assistant-count strong { margin: 0 2px; color: var(--ba-ink); font: 600 20px/1 "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", serif; font-variant-numeric: tabular-nums; vertical-align: -1px; }
+#bili-assistant-panel .bili-assistant-preference-status { margin-top: 4px; color: var(--ba-ink-3); white-space: pre-wrap; font-size: 12px; }
+
+#bili-assistant-panel button {
+  cursor: pointer; margin: 0; padding: 6px 14px;
+  border: 1px solid var(--ba-line-cool); border-radius: 8px;
+  background: transparent; color: var(--ba-ink); font: inherit; font-weight: 500;
+  transition: background .15s, border-color .15s;
+}
+#bili-assistant-panel button:hover:not(:disabled) { background: var(--ba-wash); }
+#bili-assistant-panel button[data-action="download"] { background: var(--ba-action); border-color: var(--ba-action); color: var(--ba-on-action); }
+#bili-assistant-panel button[data-action="download"]:hover:not(:disabled) { background: var(--ba-ink); border-color: var(--ba-ink); color: var(--ba-card); }
+#bili-assistant-panel button:disabled { opacity: .45; cursor: wait; }
+#bili-assistant-panel button:focus-visible { outline: 2px solid var(--ba-accent); outline-offset: 2px; }
+#bili-assistant-panel .bili-assistant-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 2px; }
+#bili-assistant-panel:has(> span:not([hidden]):not(:empty)) .bili-assistant-actions { padding-top: 12px; border-top: 1px solid var(--ba-line); }
+#bili-assistant-panel .bili-assistant-actions + span:not(:empty) { margin-top: 10px; padding-left: 9px; border-left: 2px solid var(--ba-line-cool); color: var(--ba-ink-2); font-size: 12px; }
+
+#bili-assistant-preview { margin-top: 12px; border-top: 1px solid var(--ba-line); }
+#bili-assistant-preview p { margin: 10px 0 6px; color: var(--ba-ink-3); font-size: 12px; }
+#bili-assistant-panel .bili-assistant-cues { max-height: 320px; overflow-y: auto; margin-right: -8px; padding-right: 8px; }
+#bili-assistant-panel .bili-assistant-cue { display: grid; grid-template-columns: 72px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--ba-line); }
+#bili-assistant-panel .bili-assistant-cue:last-child { border-bottom: 0; }
+#bili-assistant-panel .bili-assistant-cue > span { white-space: pre-wrap; overflow-wrap: anywhere; }
+#bili-assistant-panel .bili-assistant-cue > span:first-child,
+#bili-assistant-panel .bili-assistant-cue button { color: var(--ba-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+#bili-assistant-panel .bili-assistant-cue button { align-self: start; padding: 1px 6px; border: 0; border-radius: 5px; background: var(--ba-wash); color: var(--ba-ink-2); font-weight: 400; }
+#bili-assistant-panel .bili-assistant-cue button:hover { background: var(--ba-note); color: var(--ba-ink); }
+#bili-assistant-panel .bili-assistant-cues > button { display: block; width: 100%; margin-top: 8px; }
+
+/* ---------- 卡片上的偏好入口与菜单 ---------- */
+
+.bili-assistant-preference-trigger { display: inline-block; margin-left: 4px; padding: 0 6px; border: 0; border-radius: 6px; background: transparent; color: var(--ba-ink-3); font: bold 20px/1.1 system-ui, sans-serif; cursor: pointer; vertical-align: middle; }
+.bili-assistant-preference-trigger:hover { background: var(--ba-wash); color: var(--ba-ink); }
+.bili-assistant-preference-trigger[hidden], #bili-assistant-preference-menu[hidden] { display: none !important; }
+
+#bili-assistant-preference-menu { position: fixed; z-index: 10010; width: 196px; padding: 8px; border: 1px solid var(--ba-line); border-radius: 12px; background: var(--ba-card); color: var(--ba-ink); box-shadow: var(--ba-shadow); font: 13px/1.6 system-ui, "Noto Sans CJK SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+#bili-assistant-preference-menu.bili-preference-embedded { position: static; width: auto; min-width: 150px; margin-top: 6px; box-shadow: none; }
+#bili-assistant-preference-menu > strong { display: block; padding: 2px 8px 6px; color: var(--ba-ink-3); font-size: 12px; font-weight: 500; }
+#bili-assistant-preference-menu > button { display: flex; align-items: center; gap: 10px; width: 100%; margin: 0; padding: 6px 8px; text-align: left; border: 0; border-radius: 7px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+#bili-assistant-preference-menu > button:hover, #bili-assistant-preference-menu > button:focus-visible { background: var(--ba-wash); outline: 0; }
+#bili-assistant-preference-menu > button:disabled { opacity: .5; cursor: wait; }
+/* 四档标注用刻度长度表示强弱：喜欢向右实，不喜欢向左空。 */
+#bili-assistant-preference-menu > button::before { content: ""; flex: none; width: 22px; height: 6px; border-radius: 3px; background: var(--ba-line-cool); }
+#bili-assistant-preference-menu > button[data-rating="3"]::before { background: var(--ba-action); }
+#bili-assistant-preference-menu > button[data-rating="2"]::before { background: linear-gradient(90deg, var(--ba-action) 0 55%, var(--ba-line-cool) 55%); }
+#bili-assistant-preference-menu > button[data-rating="1"]::before { background: linear-gradient(90deg, var(--ba-ink-3) 0 25%, var(--ba-line-cool) 25%); }
+#bili-assistant-preference-menu > button[data-rating="0"]::before { background: transparent; box-shadow: inset 0 0 0 1px var(--ba-ink-3); }
+.bili-preference-note { display: block; padding: 4px 8px 2px; color: var(--ba-ink-3); font-size: 12px; overflow-wrap: anywhere; }
+.bili-preference-note:empty { display: none; }

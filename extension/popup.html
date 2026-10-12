@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Bilibili 助手</title><link rel="stylesheet" href="ui.css"></head>
+<body class="popup"><main>
+  <header class="cover">
+    <div class="cover__top">
+      <img class="cover__mark" src="icons/icon.svg" alt="">
+      <h1>Bilibili 助手</h1>
+    </div>
+    <div class="band" aria-hidden="true"></div>
+  </header>
+
+  <section class="group" aria-labelledby="popup-filter">
+    <h2 class="group__title" id="popup-filter">过滤</h2>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="filterAds"><span class="row__title">广告卡片</span></label>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="filterKeywords"><span class="row__title">关键词</span></label>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="filterDuration"><span class="row__title">短视频<span class="chip" id="duration"></span></span></label>
+  </section>
+
+  <section class="group" aria-labelledby="popup-subtitle">
+    <h2 class="group__title" id="popup-subtitle">字幕</h2>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="subtitlesEnabled"><span class="row__title">视频页字幕工具</span></label>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="localFallback"><span class="row__title">无字幕时内置识别</span></label>
+  </section>
+
+  <section class="group" aria-labelledby="popup-preference">
+    <h2 class="group__title" id="popup-preference">偏好筛选</h2>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="preferenceEnabled"><span class="row__text">
+      <span class="row__title">在这个页面开启</span>
+      <span class="row__hint">刷新或重新打开后自动关闭</span>
+    </span></label>
+  </section>
+
+  <div class="actions">
+    <button id="copy" class="btn btn--quiet" type="button">复制字幕</button>
+    <button id="download" class="btn" type="button">下载字幕</button>
+  </div>
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+  <button id="options" class="link-btn" type="button">详细设置</button>
+</main><script src="shared.js"></script><script src="settings-ui.js"></script><script src="popup.js"></script></body></html>

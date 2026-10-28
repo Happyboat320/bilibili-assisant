@@ -207,7 +207,7 @@
         target.classList.add("bili-assistant-hidden");
         if (!hidden.has(target)) filteredVideos.push({ ...data, reason });
         hidden.add(target);
-        if (reason === "关键词") preference?.queueKeywordFeedback(target, readCard, data);
+        if (reason === "关键词") preference?.queueKeywordFeedback(card, readCard, data);
         const signature = JSON.stringify([data.url, data.title, data.owner, reason]);
         if (reported.get(card) !== signature) {
           records.push({ ...data, reason, score: data.preferenceScore });

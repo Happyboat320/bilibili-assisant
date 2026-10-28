@@ -10,6 +10,8 @@ const manifest = JSON.parse(await readFile(path.join(source, 'manifest.json'), '
 const entries = {};
 async function collect(directory, prefix = '') {
   for (const item of await readdir(directory, { withFileTypes: true })) {
+    // 点文件是本地发布凭据（如 .amo-upload-uuid），不进入分发包。
+    if (item.name.startsWith('.')) continue;
     const name = prefix + item.name;
     if (item.isDirectory()) await collect(path.join(directory, item.name), name + '/');
     else if (item.isFile()) entries[name] = new Uint8Array(await readFile(path.join(directory, item.name)));

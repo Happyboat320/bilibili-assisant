@@ -9,7 +9,7 @@
 - `src/preference-head.mjs`：TensorFlow.js CPU Transformer + MLP 与 AdamW 训练。
 - `src/speech-worker.js`：Whisper CPU WASM 识别。
 - `scripts/build-speech.mjs`：打包两个 Worker、WASM 与第三方许可证。
-- `scripts/package.mjs`：仅打包 `extension/` 到 XPI。
+- `scripts/package.mjs`：仅打包 `extension/` 到 XPI，忽略本地发布凭据等点文件。
 - `scripts/check-firefox.mjs`、`scripts/firefox/`：独立配置中的真实浏览器检查。
 - `tests/`：后台流程、动态 DOM、训练数学与服务生命周期测试。
 - `reports/preference-benchmark/`：旧 Python 模型的历史基准报告。

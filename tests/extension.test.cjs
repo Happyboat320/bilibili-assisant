@@ -66,6 +66,7 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
   const copied = [];
   const speech = [];
   const preferenceLabels = [];
+  const preferenceActivations = [];
   const storage = { settings: { localFallback, ...settings } };
   let tabUrl = "https://www.bilibili.com/video/BV1xx?p=2";
   const scriptRoot = path.join(__dirname, "../extension");
@@ -79,7 +80,8 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
   };
   const context = vm.createContext({ browser, console, URL, URLSearchParams, TextEncoder, Blob, AbortSignal,
     BiliPreferenceService: () => ({
-      async setActive() {},
+      async setActive(...args) { preferenceActivations.push(args); },
+      async train(source) { return { training: true, source }; },
       async status() { return { count: preferenceReady ? 31 : 30, ready: preferenceReady, modelVersion: 1 }; },
       async label(value) { preferenceLabels.push(value); storage.preferenceRevision = 2; return { count: 31, ready: false, revision: 2 }; },
       async score(items) { return { count: preferenceReady ? 31 : 30, ready: preferenceReady, modelVersion: 1,
@@ -107,7 +109,7 @@ function makeBackground({ tracks = [], localFallback = false, apiError = false, 
     }
   });
   for (const file of ["shared.js", "wbi.js", "background.js"]) vm.runInContext(fs.readFileSync(path.join(scriptRoot, file), "utf8"), context);
-  return { downloads, states, requests, copied, storage, speech, preferenceLabels,
+  return { downloads, states, requests, copied, storage, speech, preferenceLabels, preferenceActivations,
     async enablePreference() {
       await listener({ type: "preferencePageReady", pageId: "test-page" }, { id: "test@bili", tab: { id: 1, url: tabUrl } });
       await listener({ type: "setPreferenceSession", tabId: 1, enabled: true }, { id: "test@bili" });
@@ -256,8 +258,11 @@ test("偏好开关和阈值默认安全，分数无效时不隐藏，边界等�
   const defaults = A.normalizeSettings();
   assert.equal(defaults.preferenceEnabled, false);
   assert.equal(defaults.preferenceFeedbackEnabled, false);
+  assert.equal(defaults.keywordFeedbackEnabled, false);
+  assert.equal(A.normalizeSettings({ keywordFeedbackEnabled: "true" }).keywordFeedbackEnabled, false);
+  assert.equal(A.normalizeSettings({ keywordFeedbackEnabled: true }).keywordFeedbackEnabled, true);
   assert.equal(A.filterReason({ preferenceScore: 0.01 }, defaults), null);
-  const s = A.normalizeSettings({ filterAds: false, preferenceEnabled: true, preferenceThreshold: 0.35, preferenceFeedbackThreshold: 0.8 });
+  const s = A.normalizeSettings({ filterAds: false, preferenceEnabled: true, preferenceFiltering: true, preferenceThreshold: 0.35, preferenceFeedbackThreshold: 0.8 });
   assert.equal(s.preferenceFeedbackThreshold, 0.35);
   assert.equal(A.filterReason({ preferenceScore: 0.349 }, s), "偏好模型");
   assert.equal(A.filterReason({ preferenceScore: 0.35 }, s), null);
@@ -294,7 +299,7 @@ test("自动不感兴趣的持久化领取锁能去重、限速且默认禁用",
   const disabled = makeBackground({ settings: { preferenceEnabled: true } });
   await disabled.enablePreference();
   assert.equal((await disabled.message({ type: "claimPreferenceFeedback", pageId: "test-page", id: "1", score: 0.01 }, sender)).allowed, false);
-  const bg = makeBackground({ preferenceReady: true, settings: { preferenceFeedbackEnabled: true } });
+  const bg = makeBackground({ preferenceReady: true, settings: { preferenceEnabled: true, preferenceFeedbackEnabled: true } });
   await bg.enablePreference();
   const results = await Promise.all([
     bg.message({ type: "claimPreferenceFeedback", pageId: "test-page", id: "1", score: 0.01 }, sender),
@@ -306,13 +311,37 @@ test("自动不感兴趣的持久化领取锁能去重、限速且默认禁用",
   assert.equal((await bg.message({ type: "claimPreferenceFeedback", pageId: "test-page", id: "3", score: 0.2 }, sender)).allowed, false);
 });
 
+test("关键词自动不感兴趣独立于偏好开关，并与偏好反馈共用领取锁", async () => {
+  const sender = { id: "test@bili", tab: { id: 1, url: "https://www.bilibili.com/" } };
+  const disabled = makeBackground();
+  assert.equal((await disabled.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "1" }, sender)).allowed, false);
+  assert.equal((await disabled.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "1" })).allowed, false, "仅内容脚本可领取");
+  const bg = makeBackground({ settings: { keywordFeedbackEnabled: true } });
+  const results = await Promise.all([
+    bg.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "1" }, sender),
+    bg.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "1" }, sender),
+    bg.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "2" }, sender)
+  ]);
+  assert.deepEqual(results.map(r => r.allowed), [true, false, false]);
+  assert.equal(results[1].duplicate, true);
+  assert.equal(results[2].throttled, true);
+  assert.equal(bg.storage.preferenceFeedbackLedger.length, 1);
+
+  const shared = makeBackground({ preferenceReady: true, settings: { preferenceEnabled: true, preferenceFeedbackEnabled: true, keywordFeedbackEnabled: true } });
+  await shared.enablePreference();
+  assert.equal((await shared.message({ type: "claimPreferenceFeedback", pageId: "test-page", id: "9", score: 0.01 }, sender)).allowed, true);
+  assert.equal((await shared.message({ type: "claimKeywordFeedback", pageId: "test-page", id: "9" }, sender)).allowed, false);
+  assert.equal(shared.storage.preferenceFeedbackLedger.length, 1);
+});
+
 test("每次重开页面必须手动开启，保存设置不会持久化开启状态", async () => {
   const bg = makeBackground({ settings: { preferenceEnabled: true } });
   assert.equal((await bg.message({ type: "getPreferenceSession", tabId: 1 })).enabled, false);
   await bg.enablePreference();
   assert.equal((await bg.message({ type: "getPreferenceSession", tabId: 1 })).enabled, true);
   await bg.message({ type: "saveSettings", settings: { preferenceEnabled: true, preferenceThreshold: 0.4 } });
-  assert.equal(bg.storage.settings.preferenceEnabled, false);
+  assert.equal(bg.storage.settings.preferenceEnabled, true);
+  assert.equal(bg.storage.settings.preferenceFiltering, false);
   assert.equal(Object.hasOwn(bg.storage.settings, "preferenceChargingOnly"), false);
   await bg.message({ type: "preferencePageReady", pageId: "reopened" }, { id: "test@bili", tab: { id: 1, url: "https://www.bilibili.com/" } });
   assert.equal((await bg.message({ type: "getPreferenceSession", tabId: 1 })).enabled, false);
@@ -320,4 +349,32 @@ test("每次重开页面必须手动开启，保存设置不会持久化开启�
   await bg.message({ type: "setPreferenceSession", tabId: 1, enabled: true });
   assert.equal((await bg.message({ type: "getPreferenceSession", tabId: 1 })).enabled, true);
   await assert.rejects(bg.message({ type: "preferenceScore", pageId: "old-document", items: [{ id: "1", title: "标题" }] }, { id: "test@bili", tab: { id: 1, url: "https://www.bilibili.com/" } }), /手动开启/);
+});
+
+test("只开总开关可标注但不能推理；关闭总开关会停止所有页面筛选", async () => {
+  const bg = makeBackground({ settings: { preferenceEnabled: true } });
+  const sender = { id: "test@bili", tab: { id: 1, url: "https://www.bilibili.com/" } };
+  await bg.message({ type: "preferencePageReady", pageId: "labels-only" }, sender);
+  await bg.message({ type: "preferenceLabel", pageId: "labels-only", id: "1", title: "标注视频", rating: 3 }, sender);
+  assert.equal(bg.preferenceLabels.length, 1);
+  assert.equal(bg.preferenceActivations.length, 0);
+  await assert.rejects(bg.message({ type: "preferenceScore", pageId: "labels-only", items: [] }, sender), /手动开启/);
+  await bg.message({ type: "setPreferenceSession", tabId: 1, enabled: true });
+  assert.equal(bg.preferenceActivations.at(-1)[0], true);
+  assert.equal(bg.preferenceActivations.at(-1).length, 2);
+  await bg.message({ type: "saveSettings", settings: { preferenceEnabled: false } });
+  assert.equal(bg.preferenceActivations.at(-1)[0], false);
+  assert.equal((await bg.message({ type: "getPreferenceSession", tabId: 1 })).enabled, false);
+  await assert.rejects(bg.message({ type: "preferenceLabel", pageId: "labels-only", id: "1", title: "标注视频", rating: 3 }, sender), /总开关/);
+});
+
+test("训练只允许详细设置显式请求，总开关关闭时拒绝训练", async () => {
+  const bg = makeBackground({ settings: { preferenceEnabled: true, preferenceModelSource: "huggingface" } });
+  const sender = { id: "test@bili", tab: { id: 1, url: "https://www.bilibili.com/" } };
+  await assert.rejects(bg.message({ type: "trainPreferences" }, sender), /详细设置/);
+  const result = await bg.message({ type: "trainPreferences" });
+  assert.equal(result.training, true);
+  assert.equal(result.source, "huggingface");
+  const off = makeBackground();
+  await assert.rejects(off.message({ type: "trainPreferences" }), /总开关/);
 });

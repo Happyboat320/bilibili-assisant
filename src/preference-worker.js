@@ -57,15 +57,14 @@ async function features(titles, source) {
 }
 async function dispatch(data) {
   await cpuReady();
+  if (data.type === 'restore') {
+    if (data.checkpoint?.format !== HEAD_FORMAT || data.checkpoint.model !== MODEL || data.checkpoint.dimension !== 384) throw new Error('保存的训练头格式无效。');
+    head?.dispose();
+    head = new PreferenceHead(data.checkpoint);
+    return { restored: true };
+  }
   if (data.type === 'train') {
     head?.dispose(); head = undefined;
-    if (data.checkpoint?.format === HEAD_FORMAT && data.checkpoint.model === MODEL && data.checkpoint.dimension === 384) {
-      try {
-        head = new PreferenceHead(data.checkpoint);
-        progress('已恢复浏览器保存的个人 Transformer + MLP。');
-        return { checkpoint: data.checkpoint, restored: true };
-      } catch { progress('保存的训练头无效，正在根据标注重新训练。'); }
-    }
     const encoded = await features(data.labels.map(item => item.title), data.source);
     const result = await fitHead(encoded, data.labels.map(item => item.rating), {
       onProgress: value => progress(`内置 Transformer + MLP 正在训练：${value.epoch} / ${value.epochs} 轮，损失 ${value.loss.toFixed(4)}`)

@@ -25,10 +25,19 @@
   <section class="group" aria-labelledby="popup-preference">
     <h2 class="group__title" id="popup-preference">偏好筛选</h2>
     <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="preferenceEnabled"><span class="row__text">
-      <span class="row__title">在这个页面开启</span>
-      <span class="row__hint">刷新或重新打开后自动关闭</span>
+      <span class="row__title">视频偏好总开关</span>
+      <span class="row__hint">开启后持续显示四级标注，暂不训练</span>
+    </span></label>
+    <label class="row"><input class="sw" type="checkbox" role="switch" data-setting="preferenceFiltering"><span class="row__text">
+      <span class="row__title">在这个页面开启筛选</span>
+      <span class="row__hint">使用已训练模型；刷新后关闭</span>
     </span></label>
   </section>
+
+  <details id="filtered-videos" class="popup-history">
+    <summary>已过滤 <strong id="filtered-count">0</strong> 个视频<span class="popup-history__toggle">展开</span></summary>
+    <div id="filtered-items" class="popup-history__items"></div>
+  </details>
 
   <div class="actions">
     <button id="copy" class="btn btn--quiet" type="button">复制字幕</button>

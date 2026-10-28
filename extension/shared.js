@@ -2,18 +2,18 @@
 (function (root) {
   "use strict";
   const DEFAULTS = Object.freeze({
-    filterAds: true, filterKeywords: false, keywords: "", keywordScope: "title",
+    filterAds: true, filterKeywords: false, keywords: "", keywordScope: "title", keywordFeedbackEnabled: false,
     filterDuration: false, minDuration: 60, subtitlesEnabled: true,
     localFallback: false, preferenceModelSource: "mirror", model: "small", modelSource: "mirror", language: "auto",
     subtitleLanguage: "auto", format: "srt", downloadDirectory: "", askDownloadLocation: false,
-    preferenceEnabled: false, preferenceThreshold: 0.35,
+    preferenceEnabled: false, preferenceFiltering: false, preferenceThreshold: 0.35,
     preferenceFeedbackEnabled: false, preferenceFeedbackThreshold: 0.08
   });
   function normalizeSettings(value = {}) {
     const s = { ...DEFAULTS, ...value };
     // 只保留当前设置项，旧版本已移除的设置不再写回。
     for (const key of Object.keys(s)) if (!(key in DEFAULTS)) delete s[key];
-    for (const key of ["filterAds", "filterKeywords", "filterDuration", "subtitlesEnabled", "localFallback", "askDownloadLocation", "preferenceEnabled", "preferenceFeedbackEnabled"]) {
+    for (const key of ["filterAds", "filterKeywords", "keywordFeedbackEnabled", "filterDuration", "subtitlesEnabled", "localFallback", "askDownloadLocation", "preferenceEnabled", "preferenceFiltering", "preferenceFeedbackEnabled"]) {
       s[key] = typeof s[key] === "boolean" ? s[key] : DEFAULTS[key];
     }
     s.minDuration = Math.min(86400, Math.max(0, Number(s.minDuration) || 0));
@@ -83,7 +83,7 @@
     if (s.filterKeywords && words.some(word => haystack.includes(word))) return "关键词";
     // 无时长、直播和占位卡片不参与时长判断；边界等于阈值时保留。
     if (s.filterDuration && card.duration != null && card.duration < s.minDuration) return "时长";
-    if (s.preferenceEnabled && Number.isFinite(card.preferenceScore) && card.preferenceScore < s.preferenceThreshold) return "偏好模型";
+    if (s.preferenceEnabled && s.preferenceFiltering && Number.isFinite(card.preferenceScore) && card.preferenceScore < s.preferenceThreshold) return "偏好模型";
     return null;
   }
   function timestamp(seconds, separator = ",") {

@@ -14,9 +14,25 @@
   }
   const settingsUI = BiliSettingsUI(renderSettings);
   function showPreferenceState(value) {
-    preferenceState.textContent = `${value.count} 个不同视频（31 个后运行） · ${value.ready ? "模型已就绪" : value.training ? "训练中" : "模型未就绪"}。${value.message || ""}`;
+    preferenceState.textContent = `${value.count} 个不同视频（31 个后运行） · ${value.training ? "训练中" : value.ready ? "模型已就绪" : value.hasModel ? "已有保存模型" : "尚未训练"}。${value.message || ""}${value.pendingUpdate ? " 有待训练标注，请点击“训练模型”更新。" : ""}`;
+    const log = document.querySelector("#preference-log");
+    const text = (value.logs || []).map(item => `[${new Date(item.time).toLocaleTimeString("zh-CN")}] ${item.message}`).join("\n") || "尚无训练记录。";
+    if (log.textContent !== text) { log.textContent = text; log.scrollTop = log.scrollHeight; }
+    document.querySelector("#preference-train").disabled = !!value.training || value.count < 31 || !settingsUI.value.preferenceEnabled;
     if (value.counts) preferenceState.textContent += ` 很喜欢 ${value.counts[3]} / 喜欢 ${value.counts[2]} / 不喜欢 ${value.counts[1]} / 很不喜欢 ${value.counts[0]}。`;
   }
+  async function refreshPreference() {
+    const value = await browser.runtime.sendMessage({ type: "preferenceStatus" });
+    if (value) showPreferenceState(value);
+  }
+  document.querySelector("#preference-train").addEventListener("click", async () => {
+    try {
+      if (!await save()) return;
+      showPreferenceState(await browser.runtime.sendMessage({ type: "trainPreferences" }));
+    } catch (error) { preferenceState.textContent = error.message; }
+  });
+  void refreshPreference().catch(error => { preferenceState.textContent = error.message; });
+  setInterval(() => { void refreshPreference().catch(() => {}); }, 1000);
   document.querySelector("#preference-check").addEventListener("click", async () => {
     try {
       if (!await save()) return;

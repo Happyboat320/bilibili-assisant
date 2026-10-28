@@ -32,16 +32,25 @@ test("动态卡片过滤、网格隐藏及关闭恢复，不会隐藏未知时�
     assert.ok(dom.window.document.querySelector("#advert").classList.contains("bili-assistant-hidden"));
     assert.ok(!dom.window.document.querySelector("#unknown").classList.contains("bili-assistant-hidden"));
     assert.equal(reports.flat().length, 2);
-    dom.window.document.body.insertAdjacentHTML("beforeend", '<div class="bili-video-card" id="new"><a class="bili-video-card__info--tit" title="剧透">剧透</a><span class="bili-video-card__stats__duration">02:00</span></div>');
+    dom.window.document.body.insertAdjacentHTML("beforeend", '<div class="bili-video-card" id="new"><a class="bili-video-card__info--tit" href="/video/BVfiltered" title="剧透">剧透</a><span class="bili-video-card__stats__duration">02:00</span></div>');
     storageListener({ settings: { newValue: { filterAds: true, filterDuration: true, minDuration: 60, filterKeywords: true, keywords: "剧透" } } }, "local");
     await waitScan();
     assert.ok(dom.window.document.querySelector("#new").classList.contains("bili-assistant-hidden"));
     assert.equal((await messageListener({ type: "filterCount" })).count, 3);
+    const expand = dom.window.document.querySelector('[aria-controls="bili-assistant-filtered-list"]');
+    expand.click();
+    const filteredList = dom.window.document.querySelector("#bili-assistant-filtered-list");
+    assert.equal(filteredList.hidden, false);
+    assert.equal(filteredList.querySelectorAll(".bili-assistant-filtered-item").length, 3);
+    assert.equal(filteredList.querySelector("a").href, "https://www.bilibili.com/video/BVfiltered?p=1");
+    assert.match(filteredList.textContent, /关键词/);
+    assert.equal((await messageListener({ type: "filterCount" })).videos.length, 3);
     assert.equal(reports.flat().length, 3, "重复扫描不重复写入历史");
     // 修改卡片标题后也应重新匹配，不保留旧的过滤结果。
     dom.window.document.querySelector("#new a").setAttribute("title", "普通视频");
     await waitScan();
     assert.ok(!dom.window.document.querySelector("#new").classList.contains("bili-assistant-hidden"));
+    assert.equal(filteredList.querySelectorAll(".bili-assistant-filtered-item").length, 2);
     storageListener({ settings: { newValue: { filterAds: false, filterDuration: false, filterKeywords: false } } }, "local");
     await waitScan();
     assert.equal(dom.window.document.querySelectorAll(".bili-assistant-hidden").length, 0);

@@ -29,6 +29,8 @@
       await service.setActive(true);
       assert(!(await service.status()).training && !(await service.status()).ready, '30条不启动模型');
       await service.label(labels[30]);
+      assert(!(await service.status()).training && !(await service.status()).ready, '第31条标注不自动训练');
+      await service.train();
     } else {
       assert(before.count === 31, '重启后保留31条标注');
       await service.setActive(true);

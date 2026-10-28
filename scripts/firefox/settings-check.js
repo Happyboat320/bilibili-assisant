@@ -22,7 +22,7 @@
       field.dispatchEvent(new win.Event('input', {bubbles:true}));
       field.dispatchEvent(new win.Event('change', {bubbles:true}));
     }
-    for (const name of ['filterAds','filterKeywords','filterDuration','subtitlesEnabled','localFallback']) {
+    for (const name of ['filterAds','filterKeywords','filterDuration','subtitlesEnabled','localFallback','preferenceEnabled']) {
       for (const enabled of [true, false]) {
         change(popup, p(name), enabled);
         await waitFor(async () => (await stored())[name] === enabled && form.elements[name].checked === enabled, `${name}: 弹窗→详细 ${enabled}`);
@@ -30,6 +30,7 @@
         await waitFor(async () => (await stored())[name] === !enabled && p(name).checked === !enabled, `${name}: 详细→弹窗 ${!enabled}`);
       }
     }
+    await waitFor(() => !p('preferenceFiltering').checked && p('preferenceFiltering').disabled === !p('preferenceEnabled').checked, '总开关同步且筛选保持独立关闭');
     change(options, form.elements.minDuration, '180');
     await waitFor(() => popup.document.querySelector('#duration').textContent === '< 180 秒', '时长同步');
     change(options, form.elements.minDuration, '-1');

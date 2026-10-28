@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bilibili 助手",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "过滤广告、关键词和短视频，提取字幕，插件内置语音识别和个人偏好模型训练。",
   "browser_specific_settings": {
     "gecko": {

@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { JSDOM } = require("jsdom");
 
-function harness({ enabled = true, count = 31, native = false, automatic = false, fail = false, recycleBeforeFeedback = false } = {}) {
+function harness({ enabled = true, filtering = enabled, count = 31, native = false, automatic = false, keywordFilter = false, keywordFeedback = false, fail = false, recycleBeforeFeedback = false } = {}) {
   const dom = new JSDOM(`<!doctype html><body><div class="feed-card"><div class="bili-video-card" id="low">
     <a class="bili-video-card__info--tit" href="/video/BVlow" title="低分视频">低分视频</a>
     ${native ? '<button class="bili-video-card__info--more">⋮</button><div class="bili-video-card__info--more-panel" hidden><button class="native-negative">不感兴趣</button><button class="native-report">举报</button></div>' : ""}
@@ -16,7 +16,7 @@ function harness({ enabled = true, count = 31, native = false, automatic = false
   let nativeClicks = 0;
   let reportClicks = 0;
   let state = { count, ready: count >= 31, modelVersion: 1, revision: 1, message: "测试状态" };
-  let settings = { filterAds: false, preferenceEnabled: enabled, preferenceFeedbackEnabled: automatic, preferenceThreshold: 0.35, preferenceFeedbackThreshold: 0.08 };
+  let settings = { filterAds: false, filterKeywords: keywordFilter, keywords: "低分", keywordFeedbackEnabled: keywordFeedback, preferenceEnabled: enabled, preferenceFeedbackEnabled: automatic, preferenceThreshold: 0.35, preferenceFeedbackThreshold: 0.08 };
   if (native) {
     dom.window.document.querySelector(".bili-video-card__info--more").addEventListener("click", () => {
       const panel = dom.window.document.querySelector(".bili-video-card__info--more-panel"); panel.hidden = !panel.hidden;
@@ -30,11 +30,11 @@ function harness({ enabled = true, count = 31, native = false, automatic = false
       onMessage: { addListener(fn) { messageListeners.push(fn); } },
       async sendMessage(message) {
         requests.push(message);
-        if (message.type === "preferencePageReady") { pageId = message.pageId; return { ...settings, preferenceEnabled: false }; }
+        if (message.type === "preferencePageReady") { pageId = message.pageId; return { ...settings, preferenceFiltering: false }; }
         if (message.type === "getSettings") return settings;
         if (message.type === "subtitleStatus") return { busy: false, message: "" };
         if (message.type === "recordFilters") return { ok: true };
-        if (message.type === "claimPreferenceFeedback") {
+        if (message.type === "claimPreferenceFeedback" || message.type === "claimKeywordFeedback") {
           if (recycleBeforeFeedback) {
             const title = dom.window.document.querySelector("#low a");
             title.href = "/video/BVchanged"; title.title = "已更换的视频";
@@ -49,7 +49,7 @@ function harness({ enabled = true, count = 31, native = false, automatic = false
     }
   };
   for (const file of ["shared.js", "preference.js", "content.js"]) dom.window.eval(fs.readFileSync(path.join(__dirname, "../extension", file), "utf8"));
-  if (enabled) Promise.resolve().then(() => Promise.resolve()).then(() => {
+  if (filtering) Promise.resolve().then(() => Promise.resolve()).then(() => {
     for (const fn of messageListeners) fn({ type: "preferenceSession", pageId, enabled: true });
   });
   return { dom, requests,
@@ -57,7 +57,7 @@ function harness({ enabled = true, count = 31, native = false, automatic = false
     nativeClicks: () => nativeClicks, reportClicks: () => reportClicks,
     configure(update) {
       settings = { ...settings, ...update };
-      if ("preferenceEnabled" in update) for (const fn of messageListeners) fn({ type: "preferenceSession", pageId, enabled: update.preferenceEnabled });
+      if (update.preferenceEnabled === false) for (const fn of messageListeners) fn({ type: "preferenceSession", pageId, enabled: false });
       for (const fn of storageListeners) fn({ settings: { newValue: settings } }, "local");
     },
     close() { dom.window.close(); }
@@ -136,6 +136,41 @@ test("显式开启自动反馈后只点击明确的不感兴趣，不点击举�
   } finally { h.close(); }
 });
 
+test("开启关键词自动反馈后点击不感兴趣，不要求偏好模型", async () => {
+  const h = harness({ enabled: false, filtering: false, native: true, keywordFilter: true, keywordFeedback: true });
+  try {
+    await wait(900);
+    assert.equal(h.nativeClicks(), 1);
+    assert.equal(h.reportClicks(), 0);
+    assert.ok(h.requests.some(m => m.type === "claimKeywordFeedback"));
+    assert.ok(!h.requests.some(m => m.type === "preferenceStatus"), "不应请求偏好模型");
+    const status = [...h.dom.window.document.querySelectorAll(".bili-assistant-preference-status")].find(el => !el.hidden);
+    assert.match(status.textContent, /已点击关键词视频的“不感兴趣”选项/);
+    assert.ok(h.dom.window.document.querySelector("#low").closest(".feed-card").classList.contains("bili-assistant-hidden"));
+  } finally { h.close(); }
+});
+
+test("关键词自动反馈关闭或关键词过滤未开时不点击", async () => {
+  for (const options of [{ keywordFilter: true, keywordFeedback: false }, { keywordFilter: false, keywordFeedback: true }]) {
+    const h = harness({ enabled: false, filtering: false, native: true, ...options });
+    try {
+      await wait(700);
+      assert.equal(h.nativeClicks(), 0);
+      assert.ok(!h.requests.some(m => m.type === "claimKeywordFeedback"));
+    } finally { h.close(); }
+  }
+});
+
+test("关键词卡片在领取后更换视频时不点击不感兴趣", async () => {
+  const h = harness({ enabled: false, filtering: false, native: true, keywordFilter: true, keywordFeedback: true, recycleBeforeFeedback: true });
+  try {
+    await wait(900);
+    assert.ok(h.requests.some(m => m.type === "claimKeywordFeedback"));
+    assert.equal(h.nativeClicks(), 0);
+    assert.equal(h.reportClicks(), 0);
+  } finally { h.close(); }
+});
+
 test("内置模型失败时保留所有视频，展示错误", async () => {
   const h = harness({ fail: true });
   try {
@@ -159,13 +194,36 @@ test("持久化设置即使含旧开启状态，重开页面仍需手动开启",
   const h = harness({ enabled: false });
   try {
     // 模拟新版加载时旧版本设置仍保存为 true，仅 configure 不应激活会话。
-    h.dom.window.BiliPreferences.configure({ preferenceEnabled: true });
+    await wait(50);
+    h.configure({ preferenceEnabled: true });
     await wait(500);
-    assert.equal(h.dom.window.BiliPreferences.isEnabled(), false);
+    assert.equal(h.dom.window.BiliPreferences.isFiltering(), false);
     assert.ok(!h.requests.some(m => m.type === "preferenceStatus"));
     h.activate(true);
     await wait(700);
-    assert.equal(h.dom.window.BiliPreferences.isEnabled(), true);
+    assert.equal(h.dom.window.BiliPreferences.isFiltering(), true);
     assert.ok(h.requests.some(m => m.type === "preferenceScore"));
+  } finally { h.close(); }
+});
+
+test("总开关允许持续标注，筛选未开启时不请求模型，关筛选保留标注入口", async () => {
+  const h = harness({ enabled: true, filtering: false });
+  try {
+    await wait(550);
+    const doc = h.dom.window.document;
+    const trigger = doc.querySelector("#low .bili-assistant-preference-trigger");
+    assert.ok(trigger && !trigger.hidden);
+    assert.equal(h.dom.window.BiliPreferences.isEnabled(), true);
+    assert.equal(h.dom.window.BiliPreferences.isFiltering(), false);
+    assert.ok(!h.requests.some(m => ["preferenceStatus", "preferenceScore"].includes(m.type)));
+    trigger.click();
+    doc.querySelector('[data-rating="3"]').click();
+    await new Promise(setImmediate);
+    assert.ok(h.requests.some(m => m.type === "preferenceLabel"));
+    assert.ok(!h.requests.some(m => m.type === "preferenceScore"));
+    h.activate(true); await wait(700);
+    h.activate(false); await wait(250);
+    assert.equal(trigger.hidden, false);
+    assert.equal(doc.querySelectorAll(".bili-assistant-hidden").length, 0);
   } finally { h.close(); }
 });

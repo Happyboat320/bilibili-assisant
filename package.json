@@ -1,7 +1,7 @@
 {
   "name": "bilibili-assistant-checks",
   "private": true,
-  "version": "1.5.0",
+  "version": "1.6.0",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
     "lint": "web-ext lint --source-dir extension",

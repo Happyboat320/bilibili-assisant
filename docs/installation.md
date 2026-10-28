@@ -15,7 +15,7 @@ npm run build
 2. 点击“临时载入附加组件”，选择 `extension/manifest.json`。
 3. 打开或刷新 B 站，通过插件工具栏进入详细设置。
 
-运行 `npm run package` 可生成 `artifacts/bilibili-assistant-1.5.0.xpi`。
+运行 `npm run package` 可生成 `artifacts/bilibili-assistant-1.6.0.xpi`。
 
 ## 内置字幕识别
 
@@ -36,7 +36,7 @@ npm run build
 
 无需安装 Python、填写服务令牌或启动本地进程。插件保留 MiniLM → token Transformer → MLP 结构，编码和训练均在浏览器 CPU Worker 内执行。
 
-在工具栏手动开启当前页面的偏好筛选并标注视频。第 31 条不同视频标注后自动准备模型和训练；下载源在详细设置中选择。MiniLM 量化权重约 113 MiB、分词器约 16 MiB，训练头保存在浏览器 IndexedDB。完整下载后可离线复用。
+开启视频偏好总开关后可持续标注。标注至少 31 个不同视频后，在详细设置点击“训练模型”，开启当前页面筛选只使用已保存的模型；下载源在详细设置中选择。MiniLM 量化权重约 113 MiB、分词器约 16 MiB，训练头保存在浏览器 IndexedDB。完整下载后可离线复用。
 
 旧版 `labels.json` 可在详细设置导入，之后在插件内重新训练。模型使用与数据备份详见[偏好说明](preferences.md)。
 

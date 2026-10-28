@@ -23,7 +23,7 @@ function harness({ holdTraining = false, data } = {}) {
         queueMicrotask(() => this.complete(message));
       },
       complete(message = this.messages.at(-1)) {
-        const result = message.type === 'train' ? { checkpoint: { weights: { sample: [1] } } } : message.items.map(item => ({ ...item, score: 0.1 }));
+        const result = message.type === 'restore' ? { restored: true } : message.type === 'train' ? { checkpoint: { weights: { sample: [1] } } } : message.items.map(item => ({ ...item, score: 0.1 }));
         this.onmessage({ data: { id: message.id, result } });
       },
       terminate() { this.terminated = true; }
@@ -37,69 +37,56 @@ async function ready(service) {
   for (let i = 0; i < 40; i++) { await tick(); const s = await service.status(); if (s.ready) return s; }
   throw new Error('模型未就绪');
 }
-test('默认和前30条不创建Worker，31条后训练；重开恢复已保存版本', async () => {
+test('标注、开启筛选和状态查询均不训练；手动训练后可恢复旧模型', async () => {
   const h = harness();
-  await h.service.importLabels({ labels: labels(30) });
-  await h.service.setActive(true);
-  await tick();
-  assert.equal(h.workers.length, 0);
-  await h.service.label({ id: '31', title: '第31个', rating: 3 });
-  const state = await ready(h.service);
-  assert.equal(state.count, 31);
-  assert.equal(h.workers.length, 1);
-  assert.equal(h.writes.length, 1);
-  const scores = await h.service.score([{ id: 'a', title: '新标题' }]);
-  assert.equal(scores.scores[0].score, 0.1);
-  await h.service.setActive(false);
-  assert.ok(h.workers[0].terminated);
-  const restored = createService({ storage: h.storage, checkpoints: h.checkpoints, createWorker: h.createWorker });
-  assert.equal((await restored.status()).ready, false);
-  assert.equal(h.workers.length, 1);
-  await restored.setActive(true);
-  assert.equal((await ready(restored)).revision, state.revision);
-  assert.ok(h.workers.at(-1).messages[0].checkpoint);
-  assert.equal((await restored.exportLabels()).labels.length, 31);
-});
-test('修改标注不发布旧训练版本，重复相同评级不触发训练', async () => {
-  const h = harness({ holdTraining: true });
-  await h.service.importLabels({ labels: labels(31) });
-  await h.service.setActive(true); await tick();
-  const original = h.workers[0].messages[0];
-  await h.service.label({ id: '0', title: '视频 0', rating: 3 });
-  h.workers[0].complete(original); await tick();
-  assert.equal(h.writes.length, 0);
-  assert.equal(h.workers[0].messages.length, 2);
-  h.workers[0].complete(); await ready(h.service);
-  const count = h.workers[0].messages.length;
-  await h.service.label({ id: '0', title: '视频 0', rating: 3 }); await tick();
-  assert.equal(h.workers[0].messages.length, count);
-  assert.equal(h.writes.length, 1);
-});
-test('关闭页面中断训练，不保存半成品；再次开启可训练，清空保留基础缓存', async () => {
-  const h = harness({ holdTraining: true });
   await h.service.importLabels(labels(31));
   await h.service.setActive(true); await tick();
-  await h.service.setActive(false); await tick();
-  assert.equal(h.writes.length, 0);
-  assert.equal((await h.service.status()).training, false);
-  await h.service.setActive(true); await tick();
-  assert.equal(h.workers.length, 2);
-  h.workers[1].complete(); await ready(h.service);
-  await h.service.reset();
-  assert.equal((await h.service.status()).count, 0);
-  assert.equal(await h.checkpoints.get(), undefined);
-  assert.equal(h.workers[1].terminated, true);
+  assert.equal(h.workers.length, 0);
+  await h.service.train(); await ready(h.service);
+  assert.equal(h.workers[0].messages[0].type, 'train');
+  await h.service.label({ id: '0', title: '新标题', rating: 3 });
+  await h.service.setActive(false); await h.service.setActive(true); await ready(h.service);
+  assert.equal(h.workers[1].messages[0].type, 'restore');
+  assert.equal((await h.service.status()).pendingUpdate, true);
+  assert.equal((await h.service.score([{ id: 'x', title: '新视频' }])).scores.length, 1);
+  assert.equal(h.writes.length, 1);
 });
-test('导入合并评级、验证文件并持久化，标签更新时丢弃旧推理结果', async () => {
-  const h = harness();
-  await h.service.importLabels(labels(31)); await h.service.setActive(true); await ready(h.service);
-  const worker = h.workers[0];
-  worker.postMessage = function (message) { this.messages.push(message); };
-  const pending = h.service.score([{ id: 'x', title: '旧标题' }]); await tick();
-  const scoring = worker.messages.at(-1);
+test('手动训练无需筛选页面，关闭筛选不中断训练，日志记录进度和完成', async () => {
+  const h = harness({ holdTraining: true });
+  await assert.rejects(h.service.train(), /31/);
+  await h.service.importLabels(labels(31));
+  await h.service.train(); await tick();
+  const worker = h.workers[0], original = worker.messages[0];
+  worker.onmessage({ data: { type: 'progress', message: '训练：1 / 45 轮，损失 0.69' } });
   await h.service.label({ id: '0', title: '视频 0', rating: 3 });
-  worker.complete(scoring);
-  assert.equal((await pending).scores.length, 0);
-  await assert.rejects(h.service.importLabels({ labels: [{ id: 'x', title: '无效', rating: 8 }] }), /无效/);
-  assert.equal((await h.service.exportLabels()).labels.length, 31);
+  await h.service.setActive(false);
+  assert.equal((await h.service.status()).training, true);
+  await h.service.train();
+  assert.equal(h.workers.length, 1);
+  worker.complete(original); await tick(); await tick();
+  const state = await h.service.status();
+  assert.equal(state.training, false);
+  assert.equal(state.hasModel, true);
+  assert.equal(state.pendingUpdate, true);
+  assert.equal(state.ready, false);
+  assert.ok(worker.terminated);
+  assert.match(state.logs.map(item => item.message).join('\n'), /开始手动训练.*\n.*损失.*\n.*训练完成/s);
+  await h.service.setActive(true); await ready(h.service);
+  await h.service.train(); await tick();
+  h.workers.at(-1).complete(); await ready(h.service);
+  assert.equal((await h.service.status()).pendingUpdate, false);
+});
+test('训练错误和清空取消记录在日志，半成品不保存', async () => {
+  const h = harness({ holdTraining: true });
+  await h.service.importLabels(labels(31)); await h.service.train(); await tick();
+  const worker = h.workers[0];
+  worker.onmessage({ data: { id: worker.messages[0].id, error: '下载失败' } });
+  await tick();
+  assert.equal(h.writes.length, 0);
+  assert.match((await h.service.status()).logs.at(-1).message, /训练失败.*下载失败/);
+  await h.service.train(); await tick();
+  await h.service.reset();
+  assert.equal(h.workers[1].terminated, true);
+  assert.equal((await h.service.status()).hasModel, false);
+  assert.match((await h.service.status()).logs.at(-1).message, /取消/);
 });

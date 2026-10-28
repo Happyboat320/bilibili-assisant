@@ -13,7 +13,7 @@ const preferenceSessions = new Map();
 
 async function syncPreferenceRuntime() {
   const s = await settings();
-  return preferenceService.setActive([...preferenceSessions.values()].some(session => session.enabled), s.preferenceModelSource);
+  return preferenceService.setActive([...preferenceSessions.values()].some(session => session.enabled) && s.preferenceEnabled, s.preferenceModelSource);
 
 }
 
@@ -87,6 +87,20 @@ function recordFilters(records, clear = false) {
     return history;
   });
   historyQueue = task.catch(() => {});
+  return task;
+}
+function claimFeedback(id) {
+  // 持久化去重：一天内同一视频只尝试一次，全局最多每 10 秒一次。
+  const task = feedbackQueue.then(async () => {
+    const records = (await browser.storage.local.get("preferenceFeedbackLedger")).preferenceFeedbackLedger || [];
+    const now = Date.now();
+    if (records.some(r => r.id === id && now - r.time < 86400000)) return { allowed: false, duplicate: true };
+    if (records.some(r => now - r.time < 10000)) return { allowed: false, throttled: true };
+    records.unshift({ id, time: now });
+    await browser.storage.local.set({ preferenceFeedbackLedger: records.slice(0, 500) });
+    return { allowed: true };
+  });
+  feedbackQueue = task.catch(() => {});
   return task;
 }
 async function exportSubtitles(tabId, state, action, s) {
@@ -185,7 +199,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     preferenceSessions.set(pageTab.id, { pageId: String(message.pageId), enabled: false });
     if (wasEnabled) void syncPreferenceRuntime().catch(() => {});
     const s = await settings();
-    return { ...s, preferenceEnabled: false };
+    return { ...s, preferenceFiltering: false };
   }
   if (message.type === "getPreferenceSession") return preferenceSessions.get(pageTab?.id ?? message.tabId) || { enabled: false };
   if (message.type === "preferencePageClosed") {
@@ -201,14 +215,16 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     const tab = await browser.tabs.get(message.tabId);
     const session = preferenceSessions.get(tab.id);
     if (!tab.url?.startsWith("https://www.bilibili.com/") || !session) throw new Error("请先打开或刷新 B 站页面。");
+    const s = await settings();
+    if (message.enabled && !s.preferenceEnabled) throw new Error("请先开启视频偏好总开关。");
     session.enabled = message.enabled === true;
     await browser.tabs.sendMessage(tab.id, { type: "preferenceSession", ...session });
-    void syncPreferenceRuntime().catch(() => {});
+    await syncPreferenceRuntime();
     return session;
   }
   if (message.type === "getSettings") {
     const s = await settings();
-    s.preferenceEnabled = !!preferenceSessions.get(pageTab?.id)?.enabled;
+    s.preferenceFiltering = s.preferenceEnabled && !!preferenceSessions.get(pageTab?.id)?.enabled;
     return s;
   }
   if (message.type === "saveSettings") {
@@ -217,30 +233,61 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     const saved = settingsSave.then(async () => {
       const s = A.normalizeSettings({ ...await settings(), ...message.settings });
       // 偏好开启状态只在当前文档会话中保存，绝不写进持久化设置。
-      s.preferenceEnabled = false;
+      s.preferenceFiltering = false;
       await browser.storage.local.set({ settings: s });
-      if (preferenceSessions.size) void syncPreferenceRuntime().catch(() => {});
+      if (!s.preferenceEnabled) {
+        for (const [tabId, session] of preferenceSessions) {
+          session.enabled = false;
+          void browser.tabs.sendMessage(tabId, { type: "preferenceSession", ...session }).catch(() => {});
+        }
+      }
+      await syncPreferenceRuntime();
       return s;
     });
     settingsSave = saved.catch(() => {});
     return saved;
   }
+  if (message.type === "trainPreferences") {
+    if (pageTab) throw new Error("请在详细设置中训练模型。");
+    const s = await settings();
+    if (!s.preferenceEnabled) throw new Error("请先开启视频偏好总开关。");
+    return preferenceService.train(s.preferenceModelSource);
+  }
   if (["exportPreferenceLabels", "importPreferenceLabels"].includes(message.type)) {
     if (pageTab) throw new Error("请在详细设置中导入或导出标注。");
     return message.type === "exportPreferenceLabels" ? preferenceService.exportLabels() : preferenceService.importLabels(message.data);
+  }
+  if (message.type === "claimKeywordFeedback") {
+    // 关键词反馈不依赖偏好模型，只受独立开关控制。
+    if (!pageTab?.url?.startsWith("https://www.bilibili.com/")) return { allowed: false };
+    const s = await settings();
+    const id = String(message.id || "").slice(0, 512);
+    if (!s.keywordFeedbackEnabled || !id) return { allowed: false };
+    return claimFeedback(id);
   }
   if (["preferenceStatus", "preferenceScore", "preferenceLabel", "resetPreferences", "claimPreferenceFeedback"].includes(message.type)) {
     const s = await settings();
     if (pageTab && !pageTab.url?.startsWith("https://www.bilibili.com/")) return;
     if (message.type === "resetPreferences") {
       if (pageTab) throw new Error("请在详细设置中清空偏好模型。");
+      for (const [tabId, session] of preferenceSessions) {
+        session.enabled = false;
+        void browser.tabs.sendMessage(tabId, { type: "preferenceSession", ...session }).catch(() => {});
+      }
       return preferenceService.reset();
     }
     const session = preferenceSessions.get(pageTab?.id ?? message.tabId);
-    const active = !!session?.enabled && (!pageTab || session.pageId === message.pageId);
+    const active = s.preferenceEnabled && !!session?.enabled && (!pageTab || session.pageId === message.pageId);
     if (message.type === "preferenceStatus") {
       const state = await preferenceService.status();
       return pageTab && !active ? { ...state, ready: false, runtimeActive: false } : state;
+    }
+    if (message.type === "preferenceLabel") {
+      if (!s.preferenceEnabled) throw new Error("请先开启视频偏好总开关。");
+      const id = String(message.id || "").trim().slice(0, 512);
+      const title = String(message.title || "").trim().slice(0, 300);
+      if (!id || !title || !Number.isInteger(message.rating) || message.rating < 0 || message.rating > 3) throw new Error("无效的偏好标注。");
+      return preferenceService.label({ id, title, rating: message.rating });
     }
     if (!active) throw new Error("请先手动开启当前页面的实验性偏好筛选。");
     if (message.type === "claimPreferenceFeedback") {
@@ -249,23 +296,7 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
       if (!state.ready) return { allowed: false };
       const id = String(message.id || "").slice(0, 512);
       if (!id) return { allowed: false };
-      const task = feedbackQueue.then(async () => {
-        const records = (await browser.storage.local.get("preferenceFeedbackLedger")).preferenceFeedbackLedger || [];
-        const now = Date.now();
-        // 持久化去重：一天内同一视频只尝试一次，全局最多每 10 秒一次。
-        if (records.some(r => r.id === id && now - r.time < 86400000) || records.some(r => now - r.time < 10000)) return { allowed: false };
-        records.unshift({ id, time: now });
-        await browser.storage.local.set({ preferenceFeedbackLedger: records.slice(0, 500) });
-        return { allowed: true };
-      });
-      feedbackQueue = task.catch(() => {});
-      return task;
-    }
-    if (message.type === "preferenceLabel") {
-      const id = String(message.id || "").trim().slice(0, 512);
-      const title = String(message.title || "").trim().slice(0, 300);
-      if (!id || !title || !Number.isInteger(message.rating) || message.rating < 0 || message.rating > 3) throw new Error("无效的偏好标注。");
-      return preferenceService.label({ id, title, rating: message.rating });
+      return claimFeedback(id);
     }
     const items = (Array.isArray(message.items) ? message.items : []).slice(0, 20).map(item => ({
       id: String(item.id || "").trim().slice(0, 512), title: String(item.title || "").trim().slice(0, 300)

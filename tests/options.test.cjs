@@ -40,11 +40,15 @@ test("弹窗和详细设置同步开关与时长，只提交修改字段并显�
   const root = path.join(__dirname, "../extension");
   const A = require("../extension/shared.js");
   const listeners = [], saves = [];
-  let settings = A.normalizeSettings({ preferenceModelSource: "huggingface" });
+  let settings = A.normalizeSettings({ preferenceEnabled: true, preferenceModelSource: "huggingface" });
   const browser = {
     tabs: {
       async query() { return [{ id: 1, url: "https://www.bilibili.com/video/BV1xx" }]; },
-      async get() { return { id: 1, url: "https://www.bilibili.com/video/BV1xx" }; }
+      async get() { return { id: 1, url: "https://www.bilibili.com/video/BV1xx" }; },
+      async sendMessage(id, message) {
+        assert.equal(message.type, "filterCount");
+        return { count: 1, videos: [{ title: "被隐藏的视频", url: "https://www.bilibili.com/video/BVhidden", reason: "标题关键词", owner: "测试UP" }] };
+      }
     },
     storage: { onChanged: { addListener(fn) { listeners.push(fn); } } },
     runtime: { async sendMessage(message) {
@@ -83,7 +87,16 @@ test("弹窗和详细设置同步开关与时长，只提交修改字段并显�
     change(popup, popupField("filterAds"), false);
     await tick();
     assert.equal(form.elements.filterAds.checked, false);
+    assert.equal(popup.window.document.querySelector("#filtered-count").textContent, "1");
+    const hiddenVideo = popup.window.document.querySelector("#filtered-items a");
+    assert.equal(hiddenVideo.textContent, "被隐藏的视频");
+    assert.equal(hiddenVideo.href, "https://www.bilibili.com/video/BVhidden?p=1");
+    assert.match(popup.window.document.querySelector("#filtered-items small").textContent, /标题关键词.*测试UP/);
     assert.deepEqual(Object.keys(saves.at(-1)), ["filterAds"]);
+    change(options, form.elements.keywordFeedbackEnabled, true);
+    await tick();
+    assert.deepEqual(Object.keys(saves.at(-1)), ["keywordFeedbackEnabled"]);
+    assert.equal(settings.keywordFeedbackEnabled, true);
     change(options, form.elements.keywords, "剧透", "input");
     change(popup, popupField("localFallback"), true);
     await tick();
@@ -103,7 +116,7 @@ test("弹窗和详细设置同步开关与时长，只提交修改字段并显�
     assert.equal(popupField("subtitlesEnabled").checked, false);
     assert.equal(popup.window.document.querySelector("#download").disabled, true);
     assert.equal(popup.window.document.querySelector("#copy").disabled, true);
-    assert.equal(popupField("preferenceEnabled").checked, true, "全局设置保存不关闭页面偏好会话");
+    assert.equal(popupField("preferenceFiltering").checked, true, "全局设置保存不关闭页面偏好会话");
     change(options, form.elements.preferenceThreshold, "0.04");
     await tick();
     assert.equal(form.elements.preferenceFeedbackThreshold.value, "0.04", "显示后台归一化后的阈值");
@@ -189,5 +202,41 @@ test("设置读取和保存回执迟到时，不覆盖其他窗口的新状态",
     settings = { ...settings, localFallback: true };
     await ui.refresh();
     assert.equal(ui.value.localFallback, true);
+  } finally { dom.window.close(); }
+});
+
+test("详细设置手动训练按钮提交请求，训练日志安全展示且重复训练按钮禁用", async () => {
+  const root = path.join(__dirname, "../extension");
+  const A = require("../extension/shared.js");
+  const dom = new JSDOM(fs.readFileSync(path.join(root, "options.html"), "utf8"), { runScripts: "outside-only" });
+  const requests = [];
+  let state = { count: 31, training: false, logs: [] };
+  dom.window.browser = {
+    storage: { onChanged: { addListener() {} } },
+    runtime: { async sendMessage(message) {
+      requests.push(message);
+      if (message.type === "getSettings") return A.normalizeSettings({ preferenceEnabled: true });
+      if (message.type === "getFilterHistory") return [];
+      if (message.type === "preferenceStatus") return state;
+      if (message.type === "trainPreferences") {
+        state = { count: 31, training: true, logs: [{ time: 1, message: "训练第1轮，损失0.69 <script>" }] };
+        return state;
+      }
+    } }
+  };
+  try {
+    for (const file of ["shared.js", "settings-ui.js", "options.js"]) dom.window.eval(fs.readFileSync(path.join(root, file), "utf8"));
+    await new Promise(setImmediate);
+    dom.window.document.querySelector("#preference-check").click();
+    await new Promise(setImmediate);
+    const button = dom.window.document.querySelector("#preference-train");
+    assert.equal(button.disabled, false);
+    assert.equal(requests.filter(item => item.type === "trainPreferences").length, 0);
+    button.click(); await new Promise(setImmediate);
+    assert.equal(requests.filter(item => item.type === "trainPreferences").length, 1);
+    assert.equal(button.disabled, true);
+    const log = dom.window.document.querySelector("#preference-log");
+    assert.match(log.textContent, /第1轮.*损失0.69 <script>/);
+    assert.equal(log.querySelector("script"), null);
   } finally { dom.window.close(); }
 });

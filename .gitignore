@@ -18,6 +18,7 @@ backend/models/
 .env
 .env.*
 !.env.example
+extension/.amo-upload-uuid
 
 # Node 依赖、扩展打包与覆盖率
 node_modules/

@@ -264,3 +264,13 @@ body.popup { width: 20rem; }
 .popup .btn { flex: 1; padding: .45rem .6rem; font-size: .875rem; }
 .popup .status { margin-top: .8rem; font-size: .78rem; }
 .popup .link-btn { display: block; margin-top: .85rem; font-size: .82rem; }
+
+.popup-history { margin: 12px 0; border: 1px solid var(--line-cool); border-radius: 8px; padding: 10px 12px; }
+.popup-history summary { cursor: pointer; font-size: 13px; }
+.popup-history__toggle { float: right; color: var(--action); font-size: 12px; }
+.popup-history__items { max-height: 220px; overflow-y: auto; margin-top: 10px; font-size: 12px; }
+.popup-history__item { padding: 8px 0; border-top: 1px solid var(--line-cool); }
+.popup-history__item a, .popup-history__item span { display: block; color: var(--ink); overflow-wrap: anywhere; }
+.popup-history__item small { display: block; margin-top: 3px; color: var(--ink-3); }
+
+.training-log { max-height: 18rem; overflow: auto; margin: 0; padding: .8rem; border: 1px solid var(--line-cool); border-radius: 8px; background: var(--card); color: var(--ink-2); font: .8rem/1.7 var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }

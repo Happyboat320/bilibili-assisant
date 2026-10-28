@@ -103,3 +103,11 @@
 #bili-assistant-preference-menu > button[data-rating="0"]::before { background: transparent; box-shadow: inset 0 0 0 1px var(--ba-ink-3); }
 .bili-preference-note { display: block; padding: 4px 8px 2px; color: var(--ba-ink-3); font-size: 12px; overflow-wrap: anywhere; }
 .bili-preference-note:empty { display: none; }
+
+#bili-assistant-panel .bili-assistant-filter-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+#bili-assistant-filtered-list { max-height: 260px; overflow-y: auto; margin: 8px 0; border-top: 1px solid var(--ba-line-cool); }
+#bili-assistant-panel .bili-assistant-filtered-item { padding: 8px 0; border-bottom: 1px solid var(--ba-line-cool); }
+#bili-assistant-panel .bili-assistant-filtered-item a,
+#bili-assistant-panel .bili-assistant-filtered-item span { display: block; color: var(--ba-ink); text-decoration: none; overflow-wrap: anywhere; }
+#bili-assistant-panel .bili-assistant-filtered-item a:hover { color: var(--ba-action); text-decoration: underline; }
+#bili-assistant-panel .bili-assistant-filtered-item small { display: block; margin-top: 3px; color: var(--ba-ink-3); font-size: 11px; }

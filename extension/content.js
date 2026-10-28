@@ -10,6 +10,7 @@
   let settings = A.normalizeSettings();
   let timer;
   let count = 0;
+  let filteredVideos = [];
   let subtitleState = { busy: false, message: "" };
   let renderedCues = null;
   let renderedSource = null;
@@ -21,6 +22,9 @@
   const preferenceStatus = document.createElement("span");
   preferenceStatus.className = "bili-assistant-preference-status";
   preferenceStatus.setAttribute("role", "status");
+  const feedbackStatus = document.createElement("span");
+  feedbackStatus.className = "bili-assistant-preference-status";
+  feedbackStatus.setAttribute("role", "status");
   const actions = document.createElement("div");
   actions.className = "bili-assistant-actions";
   function actionButton(label, action) {
@@ -59,7 +63,24 @@
   const cueList = document.createElement("div");
   cueList.className = "bili-assistant-cues";
   preview.append(sourceLabel, cueList);
-  panel.append(countEl, preferenceStatus, actions, status, preview);
+  const filterHeader = document.createElement("div");
+  filterHeader.className = "bili-assistant-filter-header";
+  const expandFilters = document.createElement("button");
+  expandFilters.type = "button";
+  expandFilters.textContent = "展开";
+  expandFilters.setAttribute("aria-expanded", "false");
+  expandFilters.setAttribute("aria-controls", "bili-assistant-filtered-list");
+  const filteredList = document.createElement("section");
+  filteredList.id = "bili-assistant-filtered-list";
+  filteredList.hidden = true;
+  expandFilters.addEventListener("click", () => {
+    filteredList.hidden = !filteredList.hidden;
+    expandFilters.textContent = filteredList.hidden ? "展开" : "收起";
+    expandFilters.setAttribute("aria-expanded", String(!filteredList.hidden));
+    renderFiltered();
+  });
+  filterHeader.append(countEl, expandFilters);
+  panel.append(filterHeader, filteredList, preferenceStatus, feedbackStatus, actions, status, preview);
   document.body.append(panel);
 
   function seek(seconds) {
@@ -116,13 +137,36 @@
     }
     appendPage();
   }
+  function renderFiltered() {
+    if (filteredList.hidden) return;
+    filteredList.replaceChildren();
+    if (!filteredVideos.length) { filteredList.textContent = "当前页面没有被过滤的视频。"; return; }
+    for (const item of filteredVideos) {
+      const row = document.createElement("div");
+      row.className = "bili-assistant-filtered-item";
+      const url = A.videoKey(item.url);
+      const title = document.createElement(url ? "a" : "span");
+      title.textContent = item.title || "未显示标题的视频";
+      if (url) { title.href = url; title.target = "_blank"; title.rel = "noopener noreferrer"; }
+      const reason = document.createElement("small");
+      reason.textContent = [item.reason, item.owner].filter(Boolean).join(" · ");
+      row.append(title, reason);
+      filteredList.append(row);
+    }
+  }
   function updatePanel() {
     const number = document.createElement("strong");
     number.textContent = count;
     countEl.replaceChildren("已过滤 ", number, " 个视频");
-    countEl.hidden = !(settings.filterAds || settings.filterKeywords || settings.filterDuration || settings.preferenceEnabled);
+    countEl.hidden = !(settings.filterAds || settings.filterKeywords || settings.filterDuration || settings.preferenceFiltering);
+    filterHeader.hidden = countEl.hidden;
+    if (filterHeader.hidden) { filteredList.hidden = true; expandFilters.textContent = "展开"; expandFilters.setAttribute("aria-expanded", "false"); }
+    renderFiltered();
     preferenceStatus.hidden = !settings.preferenceEnabled;
     preferenceStatus.textContent = preference?.statusText() || "";
+    const feedbackText = settings.keywordFeedbackEnabled && !settings.preferenceEnabled ? preference?.feedbackText() || "" : "";
+    feedbackStatus.hidden = !feedbackText;
+    feedbackStatus.textContent = feedbackText;
     actions.hidden = !settings.subtitlesEnabled || !A.videoKey(location.href);
     for (const button of actions.children) button.disabled = subtitleState.busy;
     downloadButton.title = settings.askDownloadLocation ? "选择保存位置" : `保存到 Downloads${settings.downloadDirectory ? "/" + settings.downloadDirectory : ""}`;
@@ -130,7 +174,7 @@
     status.textContent = settings.subtitlesEnabled && !actions.hidden ? subtitleState.message : "";
     if (actions.hidden) preview.hidden = true;
     renderPreview();
-    panel.hidden = countEl.hidden && actions.hidden && !status.textContent;
+    panel.hidden = countEl.hidden && actions.hidden && !status.textContent && feedbackStatus.hidden;
   }
   function readCard(card) {
     const titleNode = card.querySelector(titleSelector);
@@ -146,8 +190,9 @@
     return { title, owner, duration, ad, url };
   }
   function scan() {
-    if (preference) settings.preferenceEnabled = preference.isEnabled();
+    if (preference) { settings.preferenceEnabled = preference.isEnabled(); settings.preferenceFiltering = preference.isFiltering(); }
     count = 0;
+    filteredVideos = [];
     // 推荐页的 feed-card 是网格单元，隐藏它才能避免留下大片空白。
     document.querySelectorAll(".bili-assistant-hidden").forEach(el => el.classList.remove("bili-assistant-hidden"));
     const cards = [...document.querySelectorAll(cardSelector)].filter(el => !el.parentElement?.closest(cardSelector));
@@ -160,7 +205,9 @@
       if (reason) {
         const target = card.closest(".feed-card") || card;
         target.classList.add("bili-assistant-hidden");
+        if (!hidden.has(target)) filteredVideos.push({ ...data, reason });
         hidden.add(target);
+        if (reason === "关键词") preference?.queueKeywordFeedback(target, readCard, data);
         const signature = JSON.stringify([data.url, data.title, data.owner, reason]);
         if (reported.get(card) !== signature) {
           records.push({ ...data, reason, score: data.preferenceScore });
@@ -199,7 +246,7 @@
     if (message.type === "subtitleStatus" && message.state.videoKey === A.videoKey(location.href)) {
       subtitleState = message.state; updatePanel();
     }
-    if (message.type === "filterCount") return Promise.resolve({ count });
+    if (message.type === "filterCount") return Promise.resolve({ count, videos: filteredVideos });
   });
   (preference?.ready || browser.runtime.sendMessage({ type: "getSettings" })).then(value => {
     settings = A.normalizeSettings(value); preference?.configure(settings); scan();
